@@ -1,28 +1,96 @@
-# BlinkCode
+<p align="center">
+  <img src="./src/assets/BlinkCode-logo.svg" alt="BlinkCode logo" width="120" />
+</p>
 
-<<<<<<< HEAD
-Open source code editor for the browser.
-=======
 <p align="center">
   <a href="./README.md">English</a> | <a href="./README.ru.md">Русская версия</a>
 </p>
 
 <h1 align="center">BlinkCode</h1>
->>>>>>> 37a80c9 (Add bilingual README links and screenshots)
 
-No login. No install. Open the site and start coding. If security matters — clone from GitHub and run on localhost.
+<p align="center">
+  Desktop-first code editor for web and app workflows.
+</p>
 
-## Features
+<p align="center">
+  Electron • React • TypeScript • Monaco • PTY Terminal • Windows Builds
+</p>
 
-- **Monaco Editor** — the same engine as VS Code, syntax highlighting for 100+ languages, IntelliSense, multi-cursor
-- **Built-in Terminal** — full shell access, multiple instances, working directory tracking
-- **11 Themes** — Tokyo Night, Catppuccin, Gruvbox, Kanagawa, Nord, Matrix, One Dark, AMOLED and more (dark + light for each)
-- **Zero Setup** — no account, no install, no config
-- **Project Folders** — upload entire directories, file tree, drag-and-drop, rename, create, delete
-- **Settings** — fonts, cursor, brackets, auto-save, compact mode (no JSON editing)
-- **Auto-Save** — editor state, tabs and settings saved automatically every 5 seconds
-- **WebSocket Terminal** — real-time shell I/O with full cd support
-- **Privacy** — all data transmitted over secure connection, no cloud, no tracking, no analytics
+## About
+
+[`BlinkCode`](README.md) is a desktop-first editor for local development, focused on a fast workflow inside a single project.
+
+It is built for:
+- opening local project folders
+- editing code and config files
+- restoring working state between launches
+- using a built-in terminal
+- packaging as a Windows desktop application
+
+## Screenshots
+
+### 1. Welcome Screen
+
+The first screen focuses on a clean workspace, full project explorer visibility, and a desktop-style shell around the editor.
+
+<p align="center">
+  <img src="./screenshots/welcome-screen.png" alt="BlinkCode welcome screen" width="78%" />
+</p>
+
+### 2. Monaco Editor
+
+The editor view is built around Monaco, project tabs, sidebar navigation, and desktop workflow controls.
+
+<p align="center">
+  <img src="./screenshots/editor-screen.png" alt="BlinkCode editor screen" width="78%" />
+</p>
+
+### 3. Settings
+
+The settings experience is optimized for desktop use, with quick access to editor preferences and appearance controls.
+
+<p align="center">
+  <img src="./screenshots/settings-screen.png" alt="BlinkCode settings screen" width="78%" />
+</p>
+
+## Main Features
+
+### Editor
+- [`Monaco Editor`](src/components/CodeEditor/CodeEditor.tsx) as the editing core
+- autosave and state restore through [`EditorContext`](src/store/EditorContext.tsx)
+- tabs with dirty-state indicators in [`TabsHeader`](src/components/TabsHeader/TabsHeader.tsx)
+- breadcrumbs in [`Breadcrumb`](src/components/Breadcrumb/Breadcrumb.tsx)
+
+### Desktop Features
+- custom Electron shell through [`electron/main.mjs`](electron/main.mjs)
+- custom titlebar and window controls in [`TopHeader`](src/components/TopHeader/TopHeader.tsx)
+- activity bar in [`ActivityBar`](src/components/ActivityBar/ActivityBar.tsx)
+- Windows packaging through [`electron-builder`](package.json)
+
+### Project Workflow
+- opening local folders
+- file tree with rename / create / delete / drag-and-drop in [`Sidebar`](src/components/Sidebar/Sidebar.tsx)
+- recent projects in the empty explorer state
+- centralized file support rules in [`supportedWebFiles.ts`](src/utils/supportedWebFiles.ts)
+
+### File Handling
+- supported files open in Monaco
+- unsupported text files can fall back to read-only mode
+- separate handling for binary / preview / generated / large files in [`CodeEditor`](src/components/CodeEditor/CodeEditor.tsx)
+- extended support for formats such as:
+  - [`mdx`](src/utils/supportedWebFiles.ts)
+  - [`xml`](src/utils/supportedWebFiles.ts)
+  - [`ini`](src/utils/supportedWebFiles.ts)
+  - [`conf`](src/utils/supportedWebFiles.ts)
+  - [`graphql`](src/utils/supportedWebFiles.ts)
+  - [`ps1`](src/utils/supportedWebFiles.ts)
+  - [`csv`](src/utils/supportedWebFiles.ts)
+
+### Terminal
+- terminal UI based on [`xterm`](src/components/Terminal/Terminal.tsx)
+- shell session transport in [`useShell`](src/hooks/useShell.ts)
+- PTY manager in [`server/pty.js`](server/pty.js)
+- WebSocket lifecycle in [`server/index.js`](server/index.js)
 
 ## Quick Start
 
@@ -33,40 +101,72 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3001` in your browser.
+Open in browser: `http://localhost:3001`
+
+## Desktop Build
+
+```bash
+npm run dist:win
+```
+
+Build artifacts are written into [`release/`](release).
+
+## Release Files
+
+Current Windows artifacts:
+- installer: [`release/BlinkCode-Setup-0.1.0-x64.exe`](release/BlinkCode-Setup-0.1.0-x64.exe)
+- portable: [`release/BlinkCode-Portable-0.1.0-x64.exe`](release/BlinkCode-Portable-0.1.0-x64.exe)
 
 ## Tech Stack
 
-- **Frontend**: React + TypeScript + Monaco Editor + Vite
-- **Backend**: Express.js + WebSocket
-- **Persistence**: SQLite (better-sqlite3)
+- frontend: React + TypeScript + Vite
+- editor: Monaco via [`@monaco-editor/react`](package.json)
+- desktop shell: Electron
+- packaging: [`electron-builder`](package.json)
+- terminal rendering: [`xterm`](package.json)
+- backend: Express + WebSocket
+- persistence: local JSON-backed state in [`server/db.js`](server/db.js)
 
 ## Project Structure
 
-```
+```text
 BlinkCode/
-├── server/           # Express backend + WebSocket terminal
-│   ├── index.js      # REST API + WebSocket server
-│   └── db.js         # SQLite persistence
+├── electron/
+│   ├── main.mjs
+│   └── preload.cjs
+├── server/
+│   ├── db.js
+│   ├── index.js
+│   └── pty.js
+├── screenshots/
 ├── src/
 │   ├── components/
-│   │   ├── Landing/      # Landing page (/en, /ru)
-│   │   ├── CodeEditor/   # Monaco editor with 22 themes
-│   │   ├── Sidebar/      # File tree with drag-and-drop
-│   │   ├── Terminal/      # WebSocket terminal
-│   │   ├── SettingsPanel/ # Settings (Editor, Files, Appearance)
-│   │   ├── TopHeader/     # Header bar
-│   │   ├── TabsHeader/    # Tab bar with dirty indicator
-│   │   ├── AIPanel/       # AI assistant panel
-│   │   └── Toast/         # Toast notifications
-│   ├── store/             # React context + reducer
-│   ├── utils/             # API, i18n, file icons
-│   ├── hooks/             # useT, useShell, useResizable
-│   └── types/             # TypeScript types
-├── public/
-└── vite.config.ts
+│   │   ├── ActivityBar/
+│   │   ├── CodeEditor/
+│   │   ├── Sidebar/
+│   │   ├── TabsHeader/
+│   │   ├── Terminal/
+│   │   ├── TopHeader/
+│   │   └── ...
+│   ├── hooks/
+│   ├── store/
+│   ├── types/
+│   └── utils/
+├── build/
+├── release/
+└── package.json
 ```
+
+## Important Files
+
+- app shell: [`src/App.tsx`](src/App.tsx)
+- global styling: [`src/index.css`](src/index.css)
+- editor state: [`src/store/EditorContext.tsx`](src/store/EditorContext.tsx)
+- file support rules: [`src/utils/supportedWebFiles.ts`](src/utils/supportedWebFiles.ts)
+- Electron main process: [`electron/main.mjs`](electron/main.mjs)
+- backend API and terminal server: [`server/index.js`](server/index.js)
+- PTY manager: [`server/pty.js`](server/pty.js)
 
 ## License
 
-MIT
+[`MIT`](LICENSE)
