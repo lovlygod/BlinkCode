@@ -1,0 +1,418 @@
+.landing {
+  min-height: 100vh;
+  background: hsl(0, 9%, 7%);
+  color: hsl(0, 4%, 71%);
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+.blink { color: #4f8cff; }
+.wht { color: hsl(0, 15%, 94%); }
+
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 80px;
+  border-bottom: 1px solid hsl(0, 4%, 23%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: hsl(0, 9%, 7%);
+}
+
+.landing-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.landing-nav-logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.landing-nav-logo {
+  height: 34px;
+  width: auto;
+}
+
+.landing-nav-link {
+  color: hsl(0, 2%, 49%);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 100ms;
+}
+
+.landing-nav-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-nav-lang {
+  display: flex;
+  gap: 8px;
+}
+
+.landing-lang-link {
+  color: hsl(0, 2%, 49%);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 100ms;
+}
+
+.landing-lang-link.active {
+  color: hsl(0, 15%, 94%);
+  background: hsl(0, 6%, 15%);
+}
+
+.landing-lang-link:hover:not(.active) {
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.landing-nav-cta {
+  background: hsl(0, 15%, 94%);
+  color: hsl(0, 9%, 7%);
+  border: none;
+  padding: 8px 10px 8px 16px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 100ms;
+}
+
+.landing-nav-cta:hover {
+  background: hsl(0, 15%, 97%);
+}
+
+.landing-container {
+  max-width: 67.5rem;
+  width: 100%;
+  margin: 0 auto;
+  border-left: 1px solid hsl(0, 4%, 23%);
+  border-right: 1px solid hsl(0, 4%, 23%);
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-hero {
+  padding: 64px 80px;
+  border-bottom: 1px solid hsl(0, 4%, 23%);
+}
+
+.landing-new-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border: 1px solid hsl(0, 4%, 23%);
+  border-radius: 4px;
+  color: hsl(0, 4%, 71%);
+  margin-bottom: 24px;
+}
+
+.landing-hero-title {
+  font-size: 38px;
+  font-weight: 700;
+  color: hsl(0, 15%, 94%);
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+
+.landing-hero-sub {
+  font-size: 16px;
+  line-height: 200%;
+  color: hsl(0, 2%, 49%);
+  max-width: 82%;
+  margin-bottom: 32px;
+}
+
+.landing-install {
+  max-width: 560px;
+}
+
+.landing-install-tabs {
+  display: flex;
+  border: 1px solid hsl(0, 4%, 23%);
+  border-bottom: none;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  background: hsl(0, 6%, 10%);
+  padding: 0 20px;
+}
+
+.landing-install-tab {
+  padding: 12px 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: hsl(0, 2%, 49%);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 20px;
+  transition: all 100ms;
+}
+
+.landing-install-tab.active {
+  border-bottom-color: hsl(0, 15%, 94%);
+  color: hsl(0, 15%, 94%);
+}
+
+.landing-install-panel {
+  background: hsl(0, 6%, 10%);
+  border: 1px solid hsl(0, 4%, 23%);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding: 16px 20px;
+}
+
+.landing-install-panel code {
+  font-size: 13px;
+  color: hsl(0, 2%, 49%);
+}
+
+.landing-section {
+  padding: 64px 80px;
+  border-bottom: 1px solid hsl(0, 4%, 23%);
+}
+
+.landing-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(0, 15%, 94%);
+  margin-bottom: 12px;
+}
+
+.landing-section-intro {
+  font-size: 16px;
+  line-height: 200%;
+  color: hsl(0, 2%, 49%);
+  margin-bottom: 32px;
+  max-width: 82%;
+}
+
+.landing-section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: hsl(0, 15%, 94%);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 8px;
+  transition: color 100ms;
+}
+
+.landing-section-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.landing-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.landing-feature-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  line-height: 200%;
+}
+
+.landing-feature-text {
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-feature-text strong {
+  color: hsl(0, 15%, 94%);
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.landing-stats {
+  display: flex;
+  gap: 64px;
+  margin-top: 48px;
+  margin-left: 40px;
+}
+
+.landing-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.landing-stat-row strong {
+  color: hsl(0, 15%, 94%);
+  font-weight: 500;
+}
+
+.landing-stat-row span {
+  color: hsl(0, 2%, 49%);
+}
+
+.landing-privacy-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.landing-privacy-item {
+  display: flex;
+  gap: 12px;
+  line-height: 200%;
+  margin-bottom: 16px;
+}
+
+.landing-privacy-text {
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-faq-section {
+  border-bottom: none;
+}
+
+.landing-faq-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.landing-faq-item {
+  margin-bottom: 24px;
+}
+
+.landing-faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.landing-faq-question {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: none;
+  border: none;
+  color: hsl(0, 15%, 94%);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 8px;
+  text-align: left;
+  line-height: 200%;
+}
+
+.landing-faq-icon {
+  color: hsl(0, 2%, 49%);
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.landing-faq-q-text {
+  flex-grow: 1;
+}
+
+.landing-faq-answer {
+  margin-left: 40px;
+  line-height: 200%;
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 80px;
+  border-top: 1px solid hsl(0, 4%, 23%);
+}
+
+.landing-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-footer-logo {
+  height: 20px;
+  width: auto;
+}
+
+.landing-footer-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.landing-footer-links {
+  display: flex;
+  gap: 32px;
+}
+
+.landing-footer-links a {
+  color: hsl(0, 2%, 49%);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.landing-footer-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  color: hsl(0, 4%, 71%);
+}
+
+.landing-footer-copy {
+  font-size: 12px;
+  color: hsl(0, 3%, 28%);
+}
+
+.landing ::selection {
+  background: hsl(220, 84%, 70%);
+  color: hsl(0, 15%, 94%);
+}
+
+@media (max-width: 60rem) {
+  .landing-nav { padding: 24px; }
+  .landing-hero { padding: 48px 24px; }
+  .landing-hero-title { font-size: 22px; }
+  .landing-hero-sub { max-width: 100%; font-size: 15px; }
+  .landing-section { padding: 48px 24px; }
+  .landing-section-intro { max-width: 100%; }
+  .landing-stats { gap: 48px; margin-left: 0; }
+  .landing-footer { padding: 24px; flex-wrap: wrap; gap: 16px; }
+  .landing-container { border: none; }
+}
+
+@media (max-width: 40rem) {
+  .landing-stats { gap: 24px; flex-wrap: wrap; }
+}

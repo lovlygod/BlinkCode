@@ -1,0 +1,33 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+
+.main-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-base) 94%, transparent), var(--bg-base));
+}
+
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--bg-editor);
+  box-shadow: inset 1px 0 0 var(--border-weaker, var(--border-subtle));
+}
+
+.editor-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-editor) 92%, var(--bg-panel)), var(--bg-editor));
+}

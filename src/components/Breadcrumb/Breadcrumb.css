@@ -1,0 +1,29 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  padding: 4px 16px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  background: var(--bg-editor);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  gap: 2px;
+}
+
+.breadcrumb-part {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.breadcrumb-sep {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.breadcrumb-active {
+  color: var(--text-secondary);
+}

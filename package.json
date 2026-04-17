@@ -1,0 +1,123 @@
+{
+  "name": "blinkcode",
+  "description": "Desktop code editor for web and app project workflows.",
+  "main": "electron/main.mjs",
+  "private": true,
+  "version": "0.1.0",
+  "author": "BlinkCode",
+  "homepage": "https://github.com/lovlygod/blinkcode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lovlygod/blinkcode.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,vite -c blue,green \"node server/index.js\" \"vite\"",
+    "server": "node server/index.js",
+    "build": "tsc -b && vite build",
+    "electron": "electron .",
+    "electron:dev": "concurrently -n server,vite,electron -c blue,green,magenta \"node server/index.js\" \"vite\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "desktop": "npm run build && electron .",
+    "dist:win": "npm run build && npm run dist:win:setup && npm run dist:win:portable",
+    "dist:win:setup": "electron-builder --win nsis -c.artifactName=BlinkCode-Setup-${version}-${arch}.${ext}",
+    "dist:win:portable": "electron-builder --win portable -c.artifactName=BlinkCode-Portable-${version}-${arch}.${ext}",
+    "dev:desktop": "concurrently -n server,vite -c blue,green \"set PORT=3210 && node server/index.js\" \"vite --port 5174\"",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.blinkcode.desktop",
+    "productName": "BlinkCode",
+    "copyright": "Copyright © BlinkCode",
+    "icon": "build/icon.ico",
+    "executableName": "BlinkCode",
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "server/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
+      "node_modules/**/*.node"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.mjs",
+      "description": "Desktop code editor for web and app project workflows.",
+      "author": "BlinkCode"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "legalTrademarks": "BlinkCode",
+      "requestedExecutionLevel": "asInvoker",
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    }
+  },
+  "dependencies": {
+    "@lydell/node-pty": "1.2.0-beta.10",
+    "@monaco-editor/react": "^4.7.0",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-web-links": "^0.11.0",
+    "concurrently": "^9.2.1",
+    "express": "^5.2.1",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-icons": "^5.6.0",
+    "react-router-dom": "^7.14.1",
+    "uuid": "^13.0.0",
+    "ws": "^8.20.0",
+    "xterm": "^5.3.0"
+  },
+  "optionalDependencies": {
+    "@lydell/node-pty-darwin-arm64": "1.2.0-beta.10",
+    "@lydell/node-pty-darwin-x64": "1.2.0-beta.10",
+    "@lydell/node-pty-linux-arm64": "1.2.0-beta.10",
+    "@lydell/node-pty-linux-x64": "1.2.0-beta.10",
+    "@lydell/node-pty-win32-arm64": "1.2.0-beta.10",
+    "@lydell/node-pty-win32-x64": "1.2.0-beta.10"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^10.0.0",
+    "@types/wicg-file-system-access": "^2023.10.7",
+    "@vitejs/plugin-react": "^6.0.1",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^4.0.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.4",
+    "wait-on": "^8.0.3"
+  }
+}
