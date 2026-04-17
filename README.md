@@ -1,6 +1,14 @@
 # BlinkCode
 
+<<<<<<< HEAD
 Open source code editor for the browser.
+=======
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README.ru.md">Русская версия</a>
+</p>
+
+<h1 align="center">BlinkCode</h1>
+>>>>>>> 37a80c9 (Add bilingual README links and screenshots)
 
 No login. No install. Open the site and start coding. If security matters — clone from GitHub and run on localhost.
 
