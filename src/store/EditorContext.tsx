@@ -569,6 +569,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'SET_FILE_CONTENT', payload: { fileId: file.id, content } });
       } catch {}
     }
+    if (file.type === 'file' && file.binary) {
+      dispatch({ type: 'SET_FILE_CONTENT', payload: { fileId: file.id, content: '' } });
+    }
     dispatch({ type: 'OPEN_FILE', payload: { file } });
   }, []);
 

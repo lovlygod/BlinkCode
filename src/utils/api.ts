@@ -17,7 +17,11 @@ const BINARY_EXTS = new Set([
 ]);
 
 function isBinary(name: string): boolean {
-  const ext = name.split('.').pop()?.toLowerCase() || '';
+  const lower = name.toLowerCase();
+  if (lower.endsWith('.db-shm') || lower.endsWith('.db-wal') || lower.endsWith('.sqlite-shm') || lower.endsWith('.sqlite-wal')) {
+    return true;
+  }
+  const ext = lower.split('.').pop()?.toLowerCase() || '';
   return BINARY_EXTS.has(ext);
 }
 

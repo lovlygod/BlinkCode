@@ -57,13 +57,13 @@ export default function CodeEditor() {
   const { state, updateFileContent, getActiveFile, registerEditor, dispatch } = useEditor();
   const tt = useT();
   const activeFile = getActiveFile();
-  const supportInfo = activeFile && activeFile.content !== undefined
+  const supportInfo = activeFile
     ? getFileSupportInfo(activeFile.name)
     : { supported: true };
   const detailedSupport = activeFile
     ? getDetailedFileSupportInfo(activeFile.name, { binary: activeFile.binary, size: activeFile.size })
     : null;
-  const isUnsupportedTextFile = Boolean(activeFile && activeFile.content !== undefined && !activeFile.binary && !supportInfo.supported);
+  const isUnsupportedTextFile = Boolean(activeFile && !activeFile.binary && !supportInfo.supported);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showOnboardingDismiss, setShowOnboardingDismiss] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
@@ -1225,6 +1225,7 @@ export default function CodeEditor() {
       <Editor
         height="100%"
         language={activeFile.language || getMonacoLanguage(activeFile.name)}
+        path={activeFile.serverPath || activeFile.id}
         value={activeFile.content || ''}
         onChange={handleChange}
         onMount={handleMount}
