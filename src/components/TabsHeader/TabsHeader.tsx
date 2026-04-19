@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditor } from '../../store/EditorContext';
 import { getFileIcon } from '../../utils/fileIcons';
 import { X } from 'lucide-react';
@@ -23,14 +24,39 @@ function findFileNode(files: FileNode[], fileId: string): FileNode | null {
   return null;
 }
 
-interface SavePrompt { tabId: string; rect: DOMRect }
+interface TabMenu {
+  tabId: string;
+  rect: DOMRect;
+}
 
 export default function TabsHeader() {
   const { state, setActiveTab, closeTab, reorderTabs, dispatch } = useEditor();
   const tt = useT();
   const dragTab = useRef<string | null>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
-  const [prompt, setPrompt] = useState<SavePrompt | null>(null);
+  const [menu, setMenu] = useState<TabMenu | null>(null);
+
+  useEffect(() => {
+    if (!menu) return;
+
+    const handleGlobalPointerDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('.save-prompt')) return;
+      if (target?.closest('.tab')) return;
+      setMenu(null);
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenu(null);
+    };
+
+    window.addEventListener('mousedown', handleGlobalPointerDown);
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('mousedown', handleGlobalPointerDown);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [menu]);
 
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const el = tabsRef.current;
@@ -57,20 +83,10 @@ export default function TabsHeader() {
     reorderTabs(tabs);
   };
 
-  const tryClose = (tabId: string, btnEl: HTMLElement) => {
-    const tab = state.openTabs.find(t => t.id === tabId);
-    if (!tab) return;
-    if (isFileDirty(state.files, tab.fileId)) {
-      const rect = btnEl.getBoundingClientRect();
-      setPrompt({ tabId, rect });
-    } else {
-      closeTab(tabId);
-    }
-  };
-
   const handleSave = async () => {
-    if (!prompt) return;
-    const tab = state.openTabs.find(t => t.id === prompt.tabId);
+    if (!menu) return;
+    const tabId = menu.tabId;
+    const tab = state.openTabs.find(t => t.id === tabId);
     if (tab) {
       const file = findFileNode(state.files, tab.fileId);
       if (file?.serverPath && file.content !== undefined) {
@@ -80,14 +96,53 @@ export default function TabsHeader() {
         } catch {}
       }
     }
-    closeTab(prompt.tabId);
-    setPrompt(null);
+    closeTab(tabId);
+    setMenu(null);
   };
 
   const handleDontSave = () => {
-    if (!prompt) return;
-    closeTab(prompt.tabId);
-    setPrompt(null);
+    if (!menu) return;
+    const tabId = menu.tabId;
+    closeTab(tabId);
+    setMenu(null);
+  };
+
+  const handleCopyPath = async () => {
+    if (!menu) return;
+    const tab = state.openTabs.find(t => t.id === menu.tabId);
+    if (!tab) return;
+    const file = findFileNode(state.files, tab.fileId);
+    if (!file?.serverPath) return;
+    try {
+      const normalizedRelative = file.serverPath.replace(/\//g, '\\');
+      const absolutePath = state.workspaceDir
+        ? `${state.workspaceDir.replace(/\//g, '\\').replace(/\\$/, '')}\\${normalizedRelative}`
+        : normalizedRelative;
+      await navigator.clipboard.writeText(absolutePath);
+    } catch {}
+    setMenu(null);
+  };
+
+  const handleCloseOnly = () => {
+    if (!menu) return;
+    closeTab(menu.tabId);
+    setMenu(null);
+  };
+
+  const handleCloseAll = () => {
+    state.openTabs.forEach(tab => closeTab(tab.id));
+    setMenu(null);
+  };
+
+  const handleTabClick = (tabId: string, isActive: boolean, target: HTMLDivElement) => {
+    if (isActive) {
+      const rect = target.getBoundingClientRect();
+      setMenu(current => current?.tabId === tabId ? null : { tabId, rect });
+      return;
+    }
+
+    setMenu(null);
+    setActiveTab(tabId);
   };
 
   if (state.openTabs.length === 0) return null;
@@ -102,7 +157,7 @@ export default function TabsHeader() {
           <div
             key={tab.id}
             className={`tab ${isActive ? 'tab-active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={e => handleTabClick(tab.id, isActive, e.currentTarget)}
             draggable
             onDragStart={() => handleDragStart(tab.id)}
             onDragOver={e => handleDragOver(e, tab.id)}
@@ -112,26 +167,29 @@ export default function TabsHeader() {
             <span className="tab-name">{tab.name}</span>
             <button
               className={`tab-close ${dirty ? 'tab-dirty' : ''}`}
-              onClick={e => { e.stopPropagation(); tryClose(tab.id, e.currentTarget); }}
+              onClick={e => { e.stopPropagation(); closeTab(tab.id); }}
             >
               {dirty ? <span className="tab-dot" /> : <X size={12} />}
             </button>
           </div>
         );
       })}
-      {prompt && (
+      {menu && createPortal(
         <div
-          className="save-prompt"
-          style={{ left: prompt.rect.left, top: prompt.rect.bottom + 4 }}
+          className="save-prompt save-prompt-floating"
+          style={{ left: Math.max(12, menu.rect.left), top: menu.rect.bottom + 6 }}
           onClick={e => e.stopPropagation()}
         >
-          <div className="save-prompt-text">{tt('tab.savePrompt')}</div>
-          <div className="save-prompt-actions">
-            <button className="save-prompt-btn save-prompt-save" onClick={handleSave}>{tt('tab.save')}</button>
-            <button className="save-prompt-btn save-prompt-discard" onClick={handleDontSave}>{tt('tab.dontSave')}</button>
-            <button className="save-prompt-btn save-prompt-cancel" onClick={() => setPrompt(null)}>{tt('tab.cancel')}</button>
+          <div className="save-prompt-actions save-prompt-actions-vertical">
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleSave}>{tt('tab.save')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleDontSave}>{tt('tab.dontSave')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleCopyPath}>{tt('tab.copyPath')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleCloseOnly}>{tt('tab.close')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleCloseAll}>{tt('tab.closeAll')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={() => setMenu(null)}>{tt('tab.cancel')}</button>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

@@ -55,6 +55,12 @@ The settings experience is optimized for desktop use, with quick access to edito
 
 ## Main Features
 
+### Stability and Safety
+- safer handling for binary and unsupported files
+- SQLite sidecar files such as `*.db-shm` and `*.db-wal` are treated as binary files
+- improved protection against accidental file corruption when switching between unsupported and normal source files
+- terminal focus behavior improved so editor typing is not redirected into the terminal when the terminal panel is open
+
 ### Editor
 - [`Monaco Editor`](src/components/CodeEditor/CodeEditor.tsx) as the editing core
 - autosave and state restore through [`EditorContext`](src/store/EditorContext.tsx)
@@ -91,6 +97,7 @@ The settings experience is optimized for desktop use, with quick access to edito
 - shell session transport in [`useShell`](src/hooks/useShell.ts)
 - PTY manager in [`server/pty.js`](server/pty.js)
 - WebSocket lifecycle in [`server/index.js`](server/index.js)
+- improved terminal focus handling so the code editor keeps keyboard input when selected
 
 ## Quick Start
 

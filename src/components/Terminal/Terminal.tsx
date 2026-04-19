@@ -54,7 +54,6 @@ export default function TerminalPanel() {
       if (!shell.isConnected(activeInst.id)) {
         shell.connectShell(activeInst.id, state.workspaceDir);
       }
-      terminalsRef.current.get(activeInst.id)?.focus();
     }
   }, [state.terminalOpen, state.activeTerminalId, state.workspaceDir]);
 
@@ -179,7 +178,6 @@ export default function TerminalPanel() {
         fitAddon.fit();
         shell.resizeShell(inst.id, term.cols, term.rows);
         shell.requestCwd(inst.id);
-        term.focus();
       }
     });
 

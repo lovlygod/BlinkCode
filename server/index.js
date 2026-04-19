@@ -50,7 +50,13 @@ function readTree(dir, depth = 0) {
     return a.name.localeCompare(b.name);
   });
   for (const entry of entries) {
-    if (entry.name.startsWith('.') && !entry.name.endsWith('.env') && entry.name !== '.gitignore') continue;
+    if (
+      entry.name.startsWith('.') &&
+      entry.name !== '.gitignore' &&
+      entry.name !== '.gitmodules' &&
+      entry.name !== '.dockerignore' &&
+      !entry.name.startsWith('.env')
+    ) continue;
     if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.cache') continue;
     const fullPath = path.join(dir, entry.name);
     const rel = path.relative(workspace, fullPath).replace(/\\/g, '/');

@@ -232,6 +232,9 @@ const en: Record<string, string> = {
   'tab.save': 'Save',
   'tab.dontSave': "Don't Save",
   'tab.cancel': 'Cancel',
+  'tab.copyPath': 'Copy Path',
+  'tab.closeAll': 'Close All',
+  'tab.noChanges': 'No changes',
 };
 
 const ru: Record<string, string> = {
@@ -468,6 +471,9 @@ const ru: Record<string, string> = {
   'tab.save': 'Сохранить',
   'tab.dontSave': 'Не сохранять',
   'tab.cancel': 'Отмена',
+  'tab.copyPath': 'Копировать путь',
+  'tab.closeAll': 'Закрыть все',
+  'tab.noChanges': 'Без изменений',
 };
 
 const dicts: Record<string, Record<string, string>> = { en, ru };
