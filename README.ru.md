@@ -115,8 +115,8 @@ npm run dist:win
 ## Release-файлы
 
 Текущие Windows-артефакты:
-- installer: [`release/BlinkCode-Setup-0.1.0-x64.exe`](release/BlinkCode-Setup-0.1.0-x64.exe)
-- portable: [`release/BlinkCode-Portable-0.1.0-x64.exe`](release/BlinkCode-Portable-0.1.0-x64.exe)
+- installer: [`release/BlinkCode-Setup-0.1.1-x64.exe`](release/BlinkCode-Setup-0.1.1-x64.exe)
+- portable: [`release/BlinkCode-Portable-0.1.1-x64.exe`](release/BlinkCode-Portable-0.1.1-x64.exe)
 
 ## Технологии
 

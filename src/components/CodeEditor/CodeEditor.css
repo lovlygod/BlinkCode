@@ -123,6 +123,8 @@
   font-weight: 700;
   margin: 0;
   color: var(--text-primary);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .empty-hint {
