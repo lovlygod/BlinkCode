@@ -3,7 +3,7 @@
   "description": "Desktop code editor for web and app project workflows.",
   "main": "electron/main.mjs",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": "BlinkCode",
   "homepage": "https://github.com/lovlygod/blinkcode",
   "repository": {

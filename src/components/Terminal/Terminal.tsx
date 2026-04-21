@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useEditor } from '../../store/EditorContext';
 import { v4 as uuid } from 'uuid';
 import { Terminal } from 'xterm';
+import type { IDisposable, ILink, ILinkProvider } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
-import { WebLinksAddon } from '@xterm/addon-web-links';
 import 'xterm/css/xterm.css';
 import {
   X, Terminal as TermIcon,
@@ -15,22 +15,100 @@ import { useShell } from '../../hooks/useShell';
 import { useResizable } from '../../hooks/useResizable';
 import './Terminal.css';
 
+const URL_REGEX = /https?:\/\/[^\s"'<>`]+/gi;
+const ANSI_ESCAPE_REGEX = /\x1b\[[0-9;?]*[ -/]*[@-~]/g;
+
+function stripAnsi(value: string): string {
+  return value.replace(ANSI_ESCAPE_REGEX, '');
+}
+
+function extractUrls(value: string): string[] {
+  URL_REGEX.lastIndex = 0;
+  const cleanValue = stripAnsi(value);
+  return Array.from(cleanValue.matchAll(URL_REGEX), match => match[0].replace(/[\])\]}>,;:!?]+$/g, ''));
+}
+
+function createTerminalLinkProvider(
+  term: Terminal,
+  openBrowserPreview: (url: string) => void,
+): ILinkProvider {
+  return {
+    provideLinks(bufferLineNumber, callback) {
+      const line = stripAnsi(term.buffer.active.getLine(bufferLineNumber - 1)?.translateToString(true) || '');
+      const links: ILink[] = [];
+
+      URL_REGEX.lastIndex = 0;
+      for (const match of line.matchAll(URL_REGEX)) {
+        const url = match[0];
+        const startIndex = match.index ?? -1;
+        if (startIndex < 0) continue;
+
+        const endIndex = startIndex + url.length;
+        links.push({
+          range: {
+            start: { x: startIndex + 1, y: bufferLineNumber },
+            end: { x: endIndex, y: bufferLineNumber },
+          },
+          text: url,
+          decorations: {
+            underline: true,
+            pointerCursor: true,
+          },
+          activate(event) {
+            const electronApi = (window as any).electronAPI;
+            if (event.ctrlKey || event.metaKey) {
+              if (electronApi?.openExternal) {
+                electronApi.openExternal(url).catch(() => {});
+              } else {
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }
+              return;
+            }
+
+            openBrowserPreview(url);
+          },
+        });
+      }
+
+      callback(links.length > 0 ? links : undefined);
+    },
+  };
+}
+
 export default function TerminalPanel() {
   const {
     state, toggleTerminal, setTerminalHeight,
     addTerminalInstance, removeTerminalInstance, setActiveTerminal,
-    updateTerminalCwd
+    updateTerminalCwd, openBrowserPreview
   } = useEditor();
   const tt = useT();
   const resizeRef = useRef<HTMLDivElement>(null);
   const hostRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const terminalsRef = useRef<Map<string, Terminal>>(new Map());
   const fitAddonsRef = useRef<Map<string, FitAddon>>(new Map());
-  const webLinksRef = useRef<Map<string, WebLinksAddon>>(new Map());
+  const linkProvidersRef = useRef<Map<string, IDisposable>>(new Map());
+  const [detectedLinks, setDetectedLinks] = useState<Record<string, string[]>>({});
 
   const shell = useShell({
     updateTerminalCwd,
     onData: (instanceId, data) => {
+      const matches = extractUrls(data);
+      if (matches.length > 0) {
+        setDetectedLinks(prev => {
+          const existing = prev[instanceId] || [];
+          const merged = [...existing];
+
+          for (const match of matches) {
+            if (!merged.includes(match)) merged.push(match);
+          }
+
+          return {
+            ...prev,
+            [instanceId]: merged.slice(-6),
+          };
+        });
+      }
+
       terminalsRef.current.get(instanceId)?.write(data);
     },
     onExit: (instanceId, code) => {
@@ -66,7 +144,9 @@ export default function TerminalPanel() {
       terminalsRef.current.forEach(term => term.dispose());
       terminalsRef.current.clear();
       fitAddonsRef.current.clear();
-      webLinksRef.current.clear();
+      linkProvidersRef.current.forEach(provider => provider.dispose());
+      linkProvidersRef.current.clear();
+      setDetectedLinks({});
       shell.closeAll();
     };
   }, []);
@@ -105,9 +185,8 @@ export default function TerminalPanel() {
 
       let term = terminalsRef.current.get(inst.id);
       let fitAddon = fitAddonsRef.current.get(inst.id);
-      let webLinksAddon = webLinksRef.current.get(inst.id);
 
-      if (!term || !fitAddon || !webLinksAddon) {
+      if (!term || !fitAddon) {
         term = new Terminal({
           convertEol: true,
           cursorBlink: true,
@@ -138,21 +217,11 @@ export default function TerminalPanel() {
         });
 
         fitAddon = new FitAddon();
-        webLinksAddon = new WebLinksAddon((event, uri) => {
-          if (event.ctrlKey || event.metaKey) {
-            const electronApi = (window as any).electronAPI;
-            if (electronApi?.openExternal) {
-              electronApi.openExternal(uri).catch(() => {});
-            } else {
-              window.open(uri, '_blank', 'noopener,noreferrer');
-            }
-          }
-        });
         term.loadAddon(fitAddon);
-        term.loadAddon(webLinksAddon);
+        const linkProvider = term.registerLinkProvider(createTerminalLinkProvider(term, openBrowserPreview));
         terminalsRef.current.set(inst.id, term);
         fitAddonsRef.current.set(inst.id, fitAddon);
-        webLinksRef.current.set(inst.id, webLinksAddon);
+        linkProvidersRef.current.set(inst.id, linkProvider);
 
         const createdTerm = term;
         createdTerm.attachCustomKeyEventHandler((event) => {
@@ -194,8 +263,23 @@ export default function TerminalPanel() {
     terminalsRef.current.get(id)?.dispose();
     terminalsRef.current.delete(id);
     fitAddonsRef.current.delete(id);
-    webLinksRef.current.delete(id);
+    linkProvidersRef.current.get(id)?.dispose();
+    linkProvidersRef.current.delete(id);
+    setDetectedLinks(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
     removeTerminalInstance(id);
+  };
+
+  const openExternalUrl = (url: string) => {
+    const electronApi = (window as any).electronAPI;
+    if (electronApi?.openExternal) {
+      electronApi.openExternal(url).catch(() => {});
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const shortCwd = (cwd: string) => cwd;
@@ -247,6 +331,28 @@ export default function TerminalPanel() {
           >
             <div className="term-status-row">
               <span className="term-cwd">{shortCwd(inst.cwd || tt('term.placeholder'))}</span>
+              {(detectedLinks[inst.id]?.length ?? 0) > 0 && (
+                <div className="term-links-list">
+                  {detectedLinks[inst.id].map(url => (
+                    <button
+                      key={url}
+                      type="button"
+                      className="term-link-chip"
+                      onClick={() => openBrowserPreview(url)}
+                      onAuxClick={(event) => {
+                        if (event.button === 1) openExternalUrl(url);
+                      }}
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        openExternalUrl(url);
+                      }}
+                      title={url}
+                    >
+                      {url}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div
               ref={(el) => {

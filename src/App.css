@@ -20,6 +20,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   background: var(--bg-editor);
   box-shadow: inset 1px 0 0 var(--border-weaker, var(--border-subtle));
@@ -27,7 +29,11 @@
 
 .editor-content {
   flex: 1;
+  display: flex;
   overflow: hidden;
   position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   background: linear-gradient(180deg, color-mix(in srgb, var(--bg-editor) 92%, var(--bg-panel)), var(--bg-editor));
 }

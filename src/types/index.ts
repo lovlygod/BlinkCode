@@ -76,6 +76,12 @@ export interface EditorState {
   openTabs: Tab[];
   activeTabId: string | null;
   viewMode: 'editor' | 'split';
+  browserOpen: boolean;
+  browserUrl: string | null;
+  browserLoading: boolean;
+  browserCanGoBack: boolean;
+  browserCanGoForward: boolean;
+  browserError: string | null;
   showAIPanel: boolean;
   showSettings: boolean;
   sidebarWidth: number;
@@ -119,6 +125,12 @@ export type EditorAction =
   | { type: 'RENAME_NODE'; payload: { nodeId: string; newName: string } }
   | { type: 'MOVE_NODE'; payload: { nodeId: string; targetId: string | null; position: 'before' | 'after' | 'inside' } }
   | { type: 'SET_VIEW_MODE'; payload: { mode: 'editor' | 'split' } }
+  | { type: 'OPEN_BROWSER_PREVIEW'; payload: { url: string } }
+  | { type: 'CLOSE_BROWSER_PREVIEW' }
+  | { type: 'SET_BROWSER_URL'; payload: { url: string | null } }
+  | { type: 'SET_BROWSER_LOADING'; payload: { loading: boolean } }
+  | { type: 'SET_BROWSER_NAV_STATE'; payload: { canGoBack: boolean; canGoForward: boolean } }
+  | { type: 'SET_BROWSER_ERROR'; payload: { error: string | null } }
   | { type: 'TOGGLE_AI_PANEL' }
   | { type: 'SET_SIDEBAR_WIDTH'; payload: { width: number } }
   | { type: 'ADD_TOAST'; payload: ToastItem }

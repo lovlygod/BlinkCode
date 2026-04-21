@@ -25,6 +25,7 @@ It is built for:
 - editing code and config files
 - restoring working state between launches
 - using a built-in terminal
+- opening local dev-server and web links inside the app with embedded web preview
 - packaging as a Windows desktop application
 
 ## Screenshots
@@ -71,6 +72,7 @@ The settings experience is optimized for desktop use, with quick access to edito
 - custom Electron shell through [`electron/main.mjs`](electron/main.mjs)
 - custom titlebar and window controls in [`TopHeader`](src/components/TopHeader/TopHeader.tsx)
 - activity bar in [`ActivityBar`](src/components/ActivityBar/ActivityBar.tsx)
+- embedded browser preview in [`BrowserPreview`](src/components/BrowserPreview/BrowserPreview.tsx) for local sites and terminal links
 - Windows packaging through [`electron-builder`](package.json)
 
 ### Project Workflow
@@ -98,6 +100,7 @@ The settings experience is optimized for desktop use, with quick access to edito
 - PTY manager in [`server/pty.js`](server/pty.js)
 - WebSocket lifecycle in [`server/index.js`](server/index.js)
 - improved terminal focus handling so the code editor keeps keyboard input when selected
+- terminal links can open inside BlinkCode preview instead of only using the external browser
 
 ## Quick Start
 
@@ -121,8 +124,8 @@ Build artifacts are written into [`release/`](release).
 ## Release Files
 
 Current Windows artifacts:
-- installer: [`release/BlinkCode-Setup-0.1.1-x64.exe`](release/BlinkCode-Setup-0.1.1-x64.exe)
-- portable: [`release/BlinkCode-Portable-0.1.1-x64.exe`](release/BlinkCode-Portable-0.1.1-x64.exe)
+- installer: [`release/BlinkCode-Setup-0.2.0-x64.exe`](release/BlinkCode-Setup-0.2.0-x64.exe)
+- portable: [`release/BlinkCode-Portable-0.2.0-x64.exe`](release/BlinkCode-Portable-0.2.0-x64.exe)
 
 ## Tech Stack
 

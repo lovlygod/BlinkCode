@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 build/
+docs/
 release/
 _research/
 coverage/

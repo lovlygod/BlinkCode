@@ -9,9 +9,13 @@ import AIPanel from './components/AIPanel/AIPanel';
 import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import Toast from './components/Toast/Toast';
 import Breadcrumb from './components/Breadcrumb/Breadcrumb';
+import BrowserPreview from './components/BrowserPreview/BrowserPreview';
+import { useEditor } from './store/EditorContext';
 import './App.css';
 
 function EditorLayout() {
+  const { state } = useEditor();
+
   return (
     <div className="app">
       <TopHeader />
@@ -19,10 +23,14 @@ function EditorLayout() {
         <ActivityBar />
         <Sidebar />
         <div className="editor-area">
-          <TabsHeader />
-          <Breadcrumb />
+          {!state.browserOpen && (
+            <>
+              <TabsHeader />
+              <Breadcrumb />
+            </>
+          )}
           <div className="editor-content">
-            <CodeEditor />
+            {state.browserOpen ? <BrowserPreview /> : <CodeEditor />}
           </div>
           <TerminalPanel />
         </div>

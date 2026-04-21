@@ -106,6 +106,12 @@ const initialState: EditorState = {
   openTabs: [],
   activeTabId: null,
   viewMode: 'editor',
+  browserOpen: false,
+  browserUrl: null,
+  browserLoading: false,
+  browserCanGoBack: false,
+  browserCanGoForward: false,
+  browserError: null,
   showAIPanel: false,
   showSettings: false,
   sidebarWidth: 250,
@@ -334,6 +340,58 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
 
     case 'SET_VIEW_MODE': return { ...state, viewMode: action.payload.mode };
 
+    case 'OPEN_BROWSER_PREVIEW': {
+      return {
+        ...state,
+        browserOpen: true,
+        browserUrl: action.payload.url,
+        browserLoading: true,
+        browserCanGoBack: false,
+        browserCanGoForward: false,
+        browserError: null,
+      };
+    }
+
+    case 'CLOSE_BROWSER_PREVIEW': {
+      return {
+        ...state,
+        browserOpen: false,
+        browserLoading: false,
+        browserCanGoBack: false,
+        browserCanGoForward: false,
+        browserError: null,
+      };
+    }
+
+    case 'SET_BROWSER_URL': {
+      return {
+        ...state,
+        browserUrl: action.payload.url,
+      };
+    }
+
+    case 'SET_BROWSER_LOADING': {
+      return {
+        ...state,
+        browserLoading: action.payload.loading,
+      };
+    }
+
+    case 'SET_BROWSER_NAV_STATE': {
+      return {
+        ...state,
+        browserCanGoBack: action.payload.canGoBack,
+        browserCanGoForward: action.payload.canGoForward,
+      };
+    }
+
+    case 'SET_BROWSER_ERROR': {
+      return {
+        ...state,
+        browserError: action.payload.error,
+      };
+    }
+
     case 'TOGGLE_AI_PANEL': return { ...state, showAIPanel: !state.showAIPanel };
 
     case 'SET_SIDEBAR_WIDTH': return { ...state, sidebarWidth: Math.max(180, Math.min(420, action.payload.width)) };
@@ -524,6 +582,12 @@ interface Ctx {
   renameNode: (nodeId: string, newName: string) => void;
   moveNode: (nodeId: string, targetId: string | null, position: 'before' | 'after' | 'inside') => void;
   setViewMode: (mode: 'editor' | 'split') => void;
+  openBrowserPreview: (url: string) => void;
+  closeBrowserPreview: () => void;
+  setBrowserUrl: (url: string | null) => void;
+  setBrowserLoading: (loading: boolean) => void;
+  setBrowserNavState: (canGoBack: boolean, canGoForward: boolean) => void;
+  setBrowserError: (error: string | null) => void;
   toggleAIPanel: () => void;
   setSidebarWidth: (width: number) => void;
   addToast: (message: string, type: ToastItem['type']) => void;
@@ -643,6 +707,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   }, [state.files]);
 
   const setViewMode = useCallback((m: 'editor' | 'split') => dispatch({ type: 'SET_VIEW_MODE', payload: { mode: m } }), []);
+  const openBrowserPreview = useCallback((url: string) => dispatch({ type: 'OPEN_BROWSER_PREVIEW', payload: { url } }), []);
+  const closeBrowserPreview = useCallback(() => dispatch({ type: 'CLOSE_BROWSER_PREVIEW' }), []);
+  const setBrowserUrl = useCallback((url: string | null) => dispatch({ type: 'SET_BROWSER_URL', payload: { url } }), []);
+  const setBrowserLoading = useCallback((loading: boolean) => dispatch({ type: 'SET_BROWSER_LOADING', payload: { loading } }), []);
+  const setBrowserNavState = useCallback((canGoBack: boolean, canGoForward: boolean) => dispatch({ type: 'SET_BROWSER_NAV_STATE', payload: { canGoBack, canGoForward } }), []);
+  const setBrowserError = useCallback((error: string | null) => dispatch({ type: 'SET_BROWSER_ERROR', payload: { error } }), []);
   const toggleAIPanel = useCallback(() => dispatch({ type: 'TOGGLE_AI_PANEL' }), []);
   const setSidebarWidth = useCallback((w: number) => dispatch({ type: 'SET_SIDEBAR_WIDTH', payload: { width: w } }), []);
   const addToast = useCallback((msg: string, type: ToastItem['type']) => {
@@ -851,7 +921,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     <EditorContext.Provider value={{
       state, dispatch, openFile, closeTab, setActiveTab, updateFileContent,
       toggleFolder, addFile, deleteNode, renameNode, moveNode,
-      setViewMode, toggleAIPanel, setSidebarWidth, addToast, removeToast,
+      setViewMode, openBrowserPreview, closeBrowserPreview, setBrowserUrl,
+      setBrowserLoading, setBrowserNavState, setBrowserError,
+      toggleAIPanel, setSidebarWidth, addToast, removeToast,
       toggleSidebar, getActiveFile, reorderTabs, toggleTerminal, setTerminalHeight,
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,

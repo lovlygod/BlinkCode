@@ -10,6 +10,17 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow = null;
 
+function isSafeHttpUrl(rawUrl) {
+  if (typeof rawUrl !== 'string') return false;
+
+  try {
+    const parsed = new URL(rawUrl);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function appIconPath() {
   return app.isPackaged
     ? path.join(process.resourcesPath, 'icon.ico')
@@ -56,7 +67,7 @@ function registerIpc() {
   });
 
   ipcMain.handle('shell:openExternal', async (_event, url) => {
-    if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return false;
+    if (!isSafeHttpUrl(url)) return false;
     await shell.openExternal(url);
     return true;
   });
@@ -99,8 +110,31 @@ async function createWindow() {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
+      webviewTag: true,
       preload: path.join(__dirname, 'preload.cjs'),
     },
+  });
+
+  mainWindow.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    delete webPreferences.preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.sandbox = true;
+    webPreferences.webSecurity = true;
+    webPreferences.allowRunningInsecureContent = false;
+
+    if (!isSafeHttpUrl(params.src)) {
+      event.preventDefault();
+    }
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isSafeHttpUrl(url)) {
+      shell.openExternal(url).catch(() => {});
+    }
+
+    return { action: 'deny' };
   });
 
   await mainWindow.loadURL(url);

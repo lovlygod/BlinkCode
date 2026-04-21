@@ -25,6 +25,7 @@
 - редактирования кода и конфигов
 - восстановления состояния между запусками
 - использования встроенного терминала
+- открытия локальных dev-server и web-ссылок прямо внутри приложения через встроенный web preview
 - упаковки в Windows desktop-приложение
 
 ## Скриншоты
@@ -65,6 +66,7 @@
 - кастомная оболочка Electron через [`electron/main.mjs`](electron/main.mjs)
 - кастомный titlebar и window controls в [`TopHeader`](src/components/TopHeader/TopHeader.tsx)
 - activity bar в [`ActivityBar`](src/components/ActivityBar/ActivityBar.tsx)
+- встроенный browser preview в [`BrowserPreview`](src/components/BrowserPreview/BrowserPreview.tsx) для локальных сайтов и ссылок из терминала
 - Windows packaging через [`electron-builder`](package.json)
 
 ### Работа с проектами
@@ -92,6 +94,7 @@
 - PTY manager в [`server/pty.js`](server/pty.js)
 - WebSocket lifecycle в [`server/index.js`](server/index.js)
 - улучшено управление фокусом терминала, чтобы редактор сохранял ввод с клавиатуры, когда выбран именно он
+- ссылки из терминала можно открывать прямо внутри BlinkCode через встроенный preview, а не только во внешнем браузере
 
 ## Быстрый старт
 
@@ -115,8 +118,8 @@ npm run dist:win
 ## Release-файлы
 
 Текущие Windows-артефакты:
-- installer: [`release/BlinkCode-Setup-0.1.1-x64.exe`](release/BlinkCode-Setup-0.1.1-x64.exe)
-- portable: [`release/BlinkCode-Portable-0.1.1-x64.exe`](release/BlinkCode-Portable-0.1.1-x64.exe)
+- installer: [`release/BlinkCode-Setup-0.2.0-x64.exe`](release/BlinkCode-Setup-0.2.0-x64.exe)
+- portable: [`release/BlinkCode-Portable-0.2.0-x64.exe`](release/BlinkCode-Portable-0.2.0-x64.exe)
 
 ## Технологии
 
