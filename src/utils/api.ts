@@ -152,6 +152,11 @@ export function getWsUrl(): string {
   return `${proto}//${window.location.host}/ws/terminal`;
 }
 
+export function getFsWsUrl(): string {
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${window.location.host}/ws/fs`;
+}
+
 export async function fetchState(): Promise<SavedEditorState> {
   return request(`${API}/state`);
 }

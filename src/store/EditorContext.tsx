@@ -5,7 +5,8 @@ import { getMonacoLanguage, isSupportedWebFile } from '../utils/supportedWebFile
 import {
   fetchTree, fetchFileContent, saveFile, createFileOnServer,
   deleteOnServer, renameOnServer, moveOnServer,
-  openFolderOnServer, fetchState, saveStateToServer
+  openFolderOnServer, fetchState, saveStateToServer,
+  getFsWsUrl,
 } from '../utils/api';
 import { v4 as uuid } from 'uuid';
 
@@ -170,6 +171,47 @@ function sortTree(nodes: FileNode[]): FileNode[] {
     ...n,
     children: n.children ? sortTree(n.children) : undefined,
   }));
+}
+
+function addNodeByPath(nodes: FileNode[], segments: string[], type: 'file' | 'folder', name: string, fullPath: string): FileNode[] {
+  if (segments.length === 0) {
+    if (nodes.some(n => n.name === name && n.type === type)) return nodes;
+    const newNode: FileNode = {
+      id: uuid(),
+      name,
+      type,
+      serverPath: fullPath,
+      ...(type === 'folder' ? { children: [] } : { language: getMonacoLanguage(name), dirty: false }),
+    };
+    return sortNodes([...nodes, newNode]);
+  }
+
+  const [head, ...tail] = segments;
+  let idx = nodes.findIndex(n => n.type === 'folder' && n.name === head);
+
+  if (idx === -1) {
+    const parentPath = segments.join('/');
+    const parent: FileNode = {
+      id: uuid(),
+      name: head,
+      type: 'folder',
+      serverPath: parentPath,
+      isExpanded: true,
+      children: [],
+    };
+    const updated = sortNodes([...nodes, parent]);
+    idx = updated.findIndex(n => n.type === 'folder' && n.name === head);
+    nodes = updated;
+  }
+
+  return nodes.map((n, i) => {
+    if (i !== idx) return n;
+    return {
+      ...n,
+      isExpanded: true,
+      children: addNodeByPath(n.children || [], tail, type, name, fullPath),
+    };
+  });
 }
 
 function insertNodeAt(nodes: FileNode[], targetId: string | null, newNode: FileNode, position: 'before' | 'after' | 'inside'): FileNode[] {
@@ -547,6 +589,31 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
 
     case 'SET_WORKSPACE_DIR': return { ...state, workspaceDir: action.payload };
 
+    case 'FS_ADD_NODE': {
+      const { serverPath, name, type } = action.payload;
+      if (findNodeByPath(state.files, serverPath)) return state;
+      const segments = serverPath.split('/').slice(0, -1);
+      return { ...state, files: addNodeByPath(state.files, segments, type, name, serverPath) };
+    }
+
+    case 'FS_REMOVE_NODE': {
+      const { serverPath } = action.payload;
+      const target = findNodeByPath(state.files, serverPath);
+      if (!target) return state;
+      const toCloseIds = target.type === 'folder' ? getAllFileIds([target]) : [target.id];
+      const tabs = state.openTabs.filter(t => !toCloseIds.includes(t.fileId));
+      let activeId = state.activeTabId;
+      if (activeId && !tabs.find(t => t.id === activeId)) {
+        activeId = tabs.length > 0 ? tabs[tabs.length - 1].id : null;
+      }
+      return {
+        ...state,
+        files: removeNode(state.files, target.id),
+        openTabs: tabs,
+        activeTabId: activeId,
+      };
+    }
+
     default: return state;
   }
 }
@@ -852,6 +919,60 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  React.useEffect(() => {
+    let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    const connect = () => {
+      try {
+        ws = new WebSocket(getFsWsUrl());
+        ws.onmessage = (ev) => {
+          try {
+            const msg = JSON.parse(ev.data);
+            if (msg.type === 'add') {
+              dispatch({ type: 'FS_ADD_NODE', payload: { serverPath: msg.path, name: msg.name, type: 'file' } });
+            } else if (msg.type === 'addDir') {
+              dispatch({ type: 'FS_ADD_NODE', payload: { serverPath: msg.path, name: msg.name, type: 'folder' } });
+            } else if (msg.type === 'unlink') {
+              dispatch({ type: 'FS_REMOVE_NODE', payload: { serverPath: msg.path } });
+            } else if (msg.type === 'unlinkDir') {
+              dispatch({ type: 'FS_REMOVE_NODE', payload: { serverPath: msg.path } });
+            } else if (msg.type === 'change') {
+              const file = findNodeByPath(stateRef.current.files, msg.path);
+              if (file && file.type === 'file') {
+                const tab = stateRef.current.openTabs.find(t => {
+                  const f = findNodeById(stateRef.current.files, t.fileId);
+                  return f?.serverPath === msg.path;
+                });
+                if (tab && !file.dirty) {
+                  fetchFileContent(msg.path).then(content => {
+                    dispatch({ type: 'SET_FILE_CONTENT', payload: { fileId: tab.fileId, content } });
+                  }).catch(() => {});
+                } else if (tab && file.dirty) {
+                  // external change while we have unsaved edits — just show a toast
+                  const id = uuid();
+                  dispatch({ type: 'ADD_TOAST', payload: { id, message: `File modified externally: ${msg.name}`, type: 'info' } });
+                  setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: { id } }), 5000);
+                }
+              }
+            }
+          } catch {}
+        };
+        ws.onclose = () => {
+          ws = null;
+          reconnectTimer = setTimeout(connect, 2000);
+        };
+        ws.onerror = () => {
+          ws?.close();
+        };
+      } catch {}
+    };
+    connect();
+    return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      ws?.close();
+    };
   }, []);
 
   React.useEffect(() => {

@@ -5,6 +5,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import chokidar from 'chokidar';
 import { execFile } from 'child_process';
 import { fileURLToPath } from 'url';
 import { saveState, loadState, saveWorkspacePath, loadWorkspacePath, addRecentProject, loadRecentProjects } from './db.js';
@@ -83,6 +84,7 @@ app.post('/api/upload-folder', (req, res) => {
         workspace = path.resolve(targetDir);
         saveWorkspacePath(workspace);
         addRecentProject(workspace, path.basename(workspace));
+        startFsWatcher();
         res.json({ tree: readTree(workspace), workspace: path.basename(workspace) });
         return;
       }
@@ -114,6 +116,7 @@ app.post('/api/upload-folder', (req, res) => {
     }
   }
 
+  startFsWatcher();
   res.json({ tree: readTree(workspace), workspace: name || path.basename(workspace) });
 });
 
@@ -127,6 +130,7 @@ app.post('/api/open-folder', (req, res) => {
   workspace = path.resolve(dirPath);
   saveWorkspacePath(workspace);
   addRecentProject(workspace, path.basename(workspace));
+  startFsWatcher();
   res.json({ tree: readTree(workspace), workspace: path.basename(workspace) });
 });
 
@@ -279,12 +283,30 @@ app.post('/api/close-workspace', (req, res) => {
   workspace = path.join(__dirname, '..', 'workspace');
   if (!fs.existsSync(workspace)) fs.mkdirSync(workspace, { recursive: true });
   saveWorkspacePath('');
+  stopFsWatcher();
   res.json({ ok: true });
 });
 
 const server = createServer(app);
 
-const wss = new WebSocketServer({ server, path: '/ws/terminal' });
+// ---- WebSocket routing (terminal + fs watcher) ----
+
+const wss = new WebSocketServer({ noServer: true });
+const fsWss = new WebSocketServer({ noServer: true });
+
+server.on('upgrade', (request, socket, head) => {
+  if (request.url === '/ws/terminal') {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else if (request.url === '/ws/fs') {
+    fsWss.handleUpgrade(request, socket, head, (ws) => {
+      fsWss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
 
 wss.on('error', (error) => {
   if (error?.code === 'EADDRINUSE') {
@@ -293,6 +315,100 @@ wss.on('error', (error) => {
   }
 
   console.error('Terminal WebSocket error:', error);
+});
+
+fsWss.on('error', (error) => {
+  if (error?.code === 'EADDRINUSE') return;
+  console.error('FS watcher WebSocket error:', error);
+});
+
+// ---- File system watcher ----
+
+const IGNORED_DIR_NAMES = new Set([
+  'node_modules', 'dist', 'build', 'coverage',
+  '.git', '.cache', '.next', '.nuxt', '.svelte-kit',
+  '.turbo', '.output', '.parcel-cache', '.vite', '.idea',
+]);
+
+function shouldIgnoreFsPath(absPath) {
+  if (!absPath) return false;
+  const name = path.basename(absPath);
+  if (IGNORED_DIR_NAMES.has(name)) return true;
+  if (
+    name.startsWith('.') &&
+    name !== '.gitignore' &&
+    name !== '.gitmodules' &&
+    name !== '.dockerignore' &&
+    !name.startsWith('.env')
+  ) return true;
+  return false;
+}
+
+function broadcastFsEvent(payload) {
+  const msg = JSON.stringify(payload);
+  for (const client of fsWss.clients) {
+    if (client.readyState === 1) {
+      try { client.send(msg); } catch {}
+    }
+  }
+}
+
+let fsWatcher = null;
+let fsWatcherRoot = null;
+
+function stopFsWatcher() {
+  if (!fsWatcher) return;
+  try { fsWatcher.close(); } catch {}
+  fsWatcher = null;
+  fsWatcherRoot = null;
+}
+
+function startFsWatcher() {
+  stopFsWatcher();
+  const root = path.resolve(workspace);
+  fsWatcherRoot = root;
+
+  fsWatcher = chokidar.watch(root, {
+    ignored: (p) => p !== root && shouldIgnoreFsPath(p),
+    persistent: true,
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 40, pollInterval: 15 },
+    depth: 20,
+    followSymlinks: false,
+    ignorePermissionErrors: true,
+  });
+
+  const relOf = (abs) => {
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    return rel;
+  };
+
+  const emit = (type, abs, isDir) => {
+    const rel = relOf(abs);
+    if (!rel || rel.startsWith('..')) return;
+    broadcastFsEvent({
+      type,
+      path: rel,
+      name: path.basename(abs),
+      isDir,
+    });
+  };
+
+  fsWatcher.on('add', (p) => emit('add', p, false));
+  fsWatcher.on('addDir', (p) => {
+    if (path.resolve(p) === root) return;
+    emit('addDir', p, true);
+  });
+  fsWatcher.on('unlink', (p) => emit('unlink', p, false));
+  fsWatcher.on('unlinkDir', (p) => emit('unlinkDir', p, true));
+  fsWatcher.on('change', (p) => emit('change', p, false));
+  fsWatcher.on('error', (err) => console.warn('[fs watcher]', err?.message || err));
+}
+
+fsWss.on('connection', (ws) => {
+  try {
+    ws.send(JSON.stringify({ type: 'hello', workspace: path.basename(workspace) }));
+  } catch {}
 });
 
 const ptyManager = createPtyManager({ getDefaultCwd: () => workspace });
@@ -397,6 +513,7 @@ export function startBlinkCodeServer(port = process.env.PORT || 3001) {
     server.listen(port, () => {
       server.off('error', onError);
       console.log(`BlinkCode server running on http://localhost:${port}`);
+      startFsWatcher();
       resolve(server);
     });
   });
@@ -405,5 +522,5 @@ export function startBlinkCodeServer(port = process.env.PORT || 3001) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
-  startBlinkCodeServer();
+  startBlinkCodeServer().then(() => startFsWatcher()).catch(() => {});
 }

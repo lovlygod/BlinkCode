@@ -154,4 +154,6 @@ export type EditorAction =
   | { type: 'RESTORE_STATE'; payload: SavedEditorState }
   | { type: 'TOGGLE_SETTINGS' }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<EditorSettings> }
-  | { type: 'SET_WORKSPACE_DIR'; payload: string };
+  | { type: 'SET_WORKSPACE_DIR'; payload: string }
+  | { type: 'FS_ADD_NODE'; payload: { serverPath: string; name: string; type: 'file' | 'folder' } }
+  | { type: 'FS_REMOVE_NODE'; payload: { serverPath: string } };
