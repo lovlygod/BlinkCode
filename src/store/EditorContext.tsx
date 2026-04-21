@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
 
 const defaultKeybindings: Keybinding[] = [
   { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
+  { id: 'quickOpen', label: 'Quick Open', keys: 'Ctrl+P' },
   { id: 'splitEditor', label: 'Split Editor Right', keys: 'Ctrl+\\' },
   { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
   { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
@@ -1046,6 +1047,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
         switch (kb.id) {
           case 'commandPalette': window.dispatchEvent(new CustomEvent('blinkcode:toggleCommandPalette')); break;
+          case 'quickOpen': window.dispatchEvent(new CustomEvent('blinkcode:openQuickOpen', { detail: { openQuickOpen: true } })); break;
           case 'splitEditor': {
             const tab = s.openTabs.find(t => t.id === s.activeTabId);
             if (tab && !s.splitActiveTabId) dispatch({ type: 'SPLIT_TAB', payload: { tabId: tab.id } });

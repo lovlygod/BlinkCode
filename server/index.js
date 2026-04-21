@@ -149,6 +149,27 @@ app.get('/api/git-branch', (req, res) => {
   });
 });
 
+app.get('/api/files', (req, res) => {
+  if (!workspace) return res.json({ files: [] });
+  const files = [];
+  const IGNORES = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.cache', '.turbo', '.svelte-kit', 'coverage', 'out']);
+  const walk = (dir, prefix) => {
+    try {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (IGNORES.has(entry.name)) continue;
+        const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) {
+          walk(path.join(dir, entry.name), rel);
+        } else {
+          files.push(rel);
+        }
+      }
+    } catch {}
+  };
+  walk(workspace, '');
+  res.json({ files });
+});
+
 app.get('/api/file', (req, res) => {
   const p = safePath(req.query.path);
   if (!p || !fs.existsSync(p)) return res.status(404).json({ error: 'File not found' });

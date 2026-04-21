@@ -181,6 +181,7 @@ const en: Record<string, string> = {
   'settings.pressKeys': 'Press keys...',
 
   'kb.commandPalette': 'Command Palette',
+  'kb.quickOpen': 'Quick Open',
   'kb.splitEditor': 'Split Editor Right',
   'kb.save': 'Save File',
   'kb.toggleSidebar': 'Toggle Sidebar',
@@ -423,6 +424,7 @@ const ru: Record<string, string> = {
   'settings.pressKeys': 'Нажмите клавиши...',
 
   'kb.commandPalette': 'Палитра команд',
+  'kb.quickOpen': 'Быстрое открытие',
   'kb.splitEditor': 'Разделить редактор',
   'kb.save': 'Сохранить файл',
   'kb.toggleSidebar': 'Боковая панель',
