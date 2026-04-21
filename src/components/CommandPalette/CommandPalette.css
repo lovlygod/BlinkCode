@@ -1,0 +1,206 @@
+.cmdp-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+  animation: cmdp-fade 120ms ease-out;
+}
+
+@keyframes cmdp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cmdp-modal {
+  width: min(720px, 92vw);
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-dropdown, var(--bg-panel));
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 10px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 6px 16px rgba(0, 0, 0, 0.35),
+    0 0 0 1px var(--border-subtle);
+  overflow: hidden;
+  animation: cmdp-pop 140ms ease-out;
+}
+
+@keyframes cmdp-pop {
+  from { transform: translateY(-6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cmdp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-input, var(--bg-panel));
+}
+
+.cmdp-input-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.cmdp-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1.6;
+  padding: 2px 0;
+}
+
+.cmdp-input::placeholder {
+  color: var(--text-muted);
+}
+
+.cmdp-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cmdp-hint kbd,
+.cmdp-footer kbd,
+.cmdp-item-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--bg-base);
+  border: 1px solid var(--border-medium);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.cmdp-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.cmdp-list::-webkit-scrollbar { width: 8px; }
+.cmdp-list::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+
+.cmdp-empty {
+  padding: 20px 14px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.cmdp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color 80ms ease-out;
+}
+
+.cmdp-item.is-selected {
+  background: var(--accent-light, var(--hover-bg-strong));
+  box-shadow: inset 2px 0 0 var(--accent, var(--text-primary));
+}
+
+.cmdp-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.cmdp-item.is-selected .cmdp-item-icon {
+  color: var(--accent, var(--text-primary));
+}
+
+.cmdp-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cmdp-item-title {
+  font-size: 12.5px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmdp-item-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.cmdp-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cmdp-item-category {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cmdp-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 14px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cmdp-footer kbd {
+  padding: 0 4px;
+  min-width: 16px;
+  height: 16px;
+}
+
+.cmdp-count {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}

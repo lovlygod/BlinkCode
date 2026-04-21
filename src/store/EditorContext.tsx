@@ -10,6 +10,7 @@ import {
 import { v4 as uuid } from 'uuid';
 
 const defaultKeybindings: Keybinding[] = [
+  { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
   { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
   { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
   { id: 'toggleTerminal', label: 'Toggle Terminal', keys: 'Ctrl+`' },
@@ -558,10 +559,16 @@ function matchKeyCombo(e: KeyboardEvent, combo: string): boolean {
   const hasAlt = parts.includes('Alt');
   if (e.ctrlKey !== hasCtrl || e.shiftKey !== hasShift || e.altKey !== hasAlt) return false;
   const codeMap: Record<string, string> = {
-    's': 'KeyS', 'b': 'KeyB', 'i': 'KeyI', ',': 'Comma',
-    'n': 'KeyN', 'w': 'KeyW', '=': 'Equal', '-': 'Minus',
-    'f': 'KeyF', 'h': 'KeyH', 'z': 'KeyZ', 'g': 'KeyG',
-    '/': 'Slash', '`': 'Backquote',
+    a: 'KeyA', b: 'KeyB', c: 'KeyC', d: 'KeyD', e: 'KeyE', f: 'KeyF',
+    g: 'KeyG', h: 'KeyH', i: 'KeyI', j: 'KeyJ', k: 'KeyK', l: 'KeyL',
+    m: 'KeyM', n: 'KeyN', o: 'KeyO', p: 'KeyP', q: 'KeyQ', r: 'KeyR',
+    s: 'KeyS', t: 'KeyT', u: 'KeyU', v: 'KeyV', w: 'KeyW', x: 'KeyX',
+    y: 'KeyY', z: 'KeyZ',
+    '0': 'Digit0', '1': 'Digit1', '2': 'Digit2', '3': 'Digit3', '4': 'Digit4',
+    '5': 'Digit5', '6': 'Digit6', '7': 'Digit7', '8': 'Digit8', '9': 'Digit9',
+    ',': 'Comma', '.': 'Period', '/': 'Slash', '\\': 'Backslash',
+    ';': 'Semicolon', "'": 'Quote', '[': 'BracketLeft', ']': 'BracketRight',
+    '=': 'Equal', '-': 'Minus', '`': 'Backquote',
   };
   const code = codeMap[keyPart.toLowerCase()];
   if (code && e.code === code) return true;
@@ -618,7 +625,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { ...initialState, files: [] });
   const saveTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const editorRef = useRef<any>(null);
-  const registerEditor = useCallback((editor: any) => { editorRef.current = editor; }, []);
+  const registerEditor = useCallback((editor: any) => {
+    editorRef.current = editor;
+    (window as any).__blinkcodeEditor = editor;
+  }, []);
   const triggerEditorAction = useCallback((action: 'undo' | 'redo') => {
     if (editorRef.current) {
       editorRef.current.focus();
@@ -874,6 +884,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         const s = stateRef.current;
 
         switch (kb.id) {
+          case 'commandPalette': window.dispatchEvent(new CustomEvent('blinkcode:toggleCommandPalette')); break;
           case 'toggleSidebar': dispatch({ type: 'TOGGLE_SIDEBAR' }); break;
           case 'toggleTerminal': dispatch({ type: 'TOGGLE_TERMINAL' }); break;
           case 'toggleAI': dispatch({ type: 'TOGGLE_AI_PANEL' }); break;

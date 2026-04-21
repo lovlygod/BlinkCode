@@ -102,6 +102,7 @@ export default function SettingsPanel() {
 
   const resetKeybindings = () => {
     const defaultBinds = [
+      { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
       { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
       { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
       { id: 'toggleTerminal', label: 'Toggle Terminal', keys: 'Ctrl+`' },

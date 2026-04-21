@@ -180,6 +180,7 @@ const en: Record<string, string> = {
   'settings.reset': 'Reset',
   'settings.pressKeys': 'Press keys...',
 
+  'kb.commandPalette': 'Command Palette',
   'kb.save': 'Save File',
   'kb.toggleSidebar': 'Toggle Sidebar',
   'kb.toggleTerminal': 'Toggle Terminal',
@@ -420,6 +421,7 @@ const ru: Record<string, string> = {
   'settings.reset': 'Сбросить',
   'settings.pressKeys': 'Нажмите клавиши...',
 
+  'kb.commandPalette': 'Палитра команд',
   'kb.save': 'Сохранить файл',
   'kb.toggleSidebar': 'Боковая панель',
   'kb.toggleTerminal': 'Терминал',

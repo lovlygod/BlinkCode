@@ -10,6 +10,7 @@ import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import Toast from './components/Toast/Toast';
 import Breadcrumb from './components/Breadcrumb/Breadcrumb';
 import BrowserPreview from './components/BrowserPreview/BrowserPreview';
+import CommandPalette from './components/CommandPalette/CommandPalette';
 import { useEditor } from './store/EditorContext';
 import './App.css';
 
@@ -38,6 +39,7 @@ function EditorLayout() {
       </div>
       <Toast />
       <SettingsPanel />
+      <CommandPalette />
     </div>
   );
 }
