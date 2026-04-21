@@ -1050,6 +1050,12 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
       overviewRulerLanes: 0,
       scrollbar: { verticalScrollbarSize: 5, horizontalScrollbarSize: 5, vertical: 'auto', horizontal: 'auto' },
     });
+
+    editor.onDidChangeCursorPosition((e: any) => {
+      window.dispatchEvent(new CustomEvent('blinkcode:cursorPosition', {
+        detail: { line: e.position.lineNumber, column: e.position.column },
+      }));
+    });
   }, []);
 
   if (!activeFile) {

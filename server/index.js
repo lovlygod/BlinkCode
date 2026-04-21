@@ -138,6 +138,17 @@ app.get('/api/recent-projects', (req, res) => {
   res.json({ projects: loadRecentProjects() });
 });
 
+app.get('/api/git-branch', (req, res) => {
+  if (!workspace) return res.json({ branch: null });
+  const gitDir = path.join(workspace, '.git');
+  if (!fs.existsSync(gitDir)) return res.json({ branch: null });
+  execFile('git', ['branch', '--show-current'], { cwd: workspace }, (err, stdout) => {
+    if (err) return res.json({ branch: null });
+    const branch = stdout.trim();
+    res.json({ branch: branch || null });
+  });
+});
+
 app.get('/api/file', (req, res) => {
   const p = safePath(req.query.path);
   if (!p || !fs.existsSync(p)) return res.status(404).json({ error: 'File not found' });
