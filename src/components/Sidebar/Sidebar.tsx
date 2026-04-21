@@ -124,7 +124,7 @@ export default function Sidebar() {
   useEffect(() => { if (inline) inlineRef.current?.focus(); }, [inline]);
   useEffect(() => {
     if (state.pendingCreate) {
-      setInline({ parentId: null, type: state.pendingCreate, value: '' });
+      setInline({ parentId: null, type: state.pendingCreate.type, value: '' });
       dispatch({ type: 'CLEAR_PENDING_CREATE' });
     }
   }, [state.pendingCreate]);

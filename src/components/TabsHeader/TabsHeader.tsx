@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useEditor } from '../../store/EditorContext';
 import { getFileIcon } from '../../utils/fileIcons';
-import { X } from 'lucide-react';
+import { X, Split } from 'lucide-react';
 import type { FileNode } from '../../types';
 import { useT } from '../../hooks/useT';
 import { saveFile as saveFileApi } from '../../utils/api';
@@ -30,7 +30,7 @@ interface TabMenu {
 }
 
 export default function TabsHeader() {
-  const { state, setActiveTab, closeTab, reorderTabs, dispatch } = useEditor();
+  const { state, setActiveTab, closeTab, reorderTabs, dispatch, splitTab } = useEditor();
   const tt = useT();
   const dragTab = useRef<string | null>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -129,6 +129,12 @@ export default function TabsHeader() {
     setMenu(null);
   };
 
+  const handleSplit = () => {
+    if (!menu) return;
+    splitTab(menu.tabId);
+    setMenu(null);
+  };
+
   const handleCloseAll = () => {
     state.openTabs.forEach(tab => closeTab(tab.id));
     setMenu(null);
@@ -184,6 +190,10 @@ export default function TabsHeader() {
             <button className="save-prompt-btn save-prompt-plain" onClick={handleSave}>{tt('tab.save')}</button>
             <button className="save-prompt-btn save-prompt-plain" onClick={handleDontSave}>{tt('tab.dontSave')}</button>
             <button className="save-prompt-btn save-prompt-plain" onClick={handleCopyPath}>{tt('tab.copyPath')}</button>
+            <button className="save-prompt-btn save-prompt-plain" onClick={handleSplit}>
+              <Split size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+              Split Right
+            </button>
             <button className="save-prompt-btn save-prompt-plain" onClick={handleCloseOnly}>{tt('tab.close')}</button>
             <button className="save-prompt-btn save-prompt-plain" onClick={handleCloseAll}>{tt('tab.closeAll')}</button>
             <button className="save-prompt-btn save-prompt-plain" onClick={() => setMenu(null)}>{tt('tab.cancel')}</button>

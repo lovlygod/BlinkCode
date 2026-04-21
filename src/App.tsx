@@ -16,6 +16,7 @@ import './App.css';
 
 function EditorLayout() {
   const { state } = useEditor();
+  const isSplit = !!state.splitActiveTabId && !state.browserOpen;
 
   return (
     <div className="app">
@@ -30,8 +31,22 @@ function EditorLayout() {
               <Breadcrumb />
             </>
           )}
-          <div className="editor-content">
-            {state.browserOpen ? <BrowserPreview /> : <CodeEditor />}
+          <div className={`editor-content${isSplit ? ' editor-split' : ''}`}>
+            {state.browserOpen ? (
+              <BrowserPreview />
+            ) : isSplit ? (
+              <>
+                <div className="editor-pane editor-pane-primary">
+                  <CodeEditor group="primary" />
+                </div>
+                <div className="editor-split-divider" />
+                <div className="editor-pane editor-pane-secondary">
+                  <CodeEditor group="secondary" />
+                </div>
+              </>
+            ) : (
+              <CodeEditor group="primary" />
+            )}
           </div>
           <TerminalPanel />
         </div>

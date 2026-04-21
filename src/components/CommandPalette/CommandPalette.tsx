@@ -27,6 +27,8 @@ import {
   Search,
   ChevronsDownUp,
   Globe,
+  Split,
+  PanelLeftClose,
 } from 'lucide-react';
 import { useEditor } from '../../store/EditorContext';
 import type { EditorSettings } from '../../types';
@@ -102,6 +104,8 @@ export default function CommandPalette() {
     closeBrowserPreview,
     collapseAll,
     addToast,
+    splitTab,
+    closeSplitTab,
   } = useEditor();
 
   const [open, setOpen] = useState(false);
@@ -184,6 +188,23 @@ export default function CommandPalette() {
         icon: <ZoomOut size={14} />,
         shortcut: 'Ctrl+-',
         run: () => updateSettings({ fontSize: Math.max(8, settings.fontSize - 1) }),
+      },
+      {
+        id: 'view.splitEditor',
+        title: 'View: Split Editor Right',
+        category: 'View',
+        icon: <Split size={14} />,
+        shortcut: 'Ctrl+\\',
+        when: () => !!activeTab && !s.splitActiveTabId,
+        run: () => { if (activeTab) splitTab(activeTab.id); },
+      },
+      {
+        id: 'view.closeSplit',
+        title: 'View: Close Split Editor',
+        category: 'View',
+        icon: <PanelLeftClose size={14} />,
+        when: () => !!s.splitActiveTabId,
+        run: () => closeSplitTab(),
       },
       {
         id: 'view.collapseAllFolders',

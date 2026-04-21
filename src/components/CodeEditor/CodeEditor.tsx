@@ -53,10 +53,11 @@ function defineBlinkTheme(monaco: any, name: string, theme: { base: string; inhe
   });
 }
 
-export default function CodeEditor() {
-  const { state, updateFileContent, getActiveFile, registerEditor, dispatch } = useEditor();
+export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 'secondary' }) {
+  const { state, updateFileContent, getActiveFile, getSplitActiveFile, registerEditor, dispatch } = useEditor();
+  const getFileForGroup = group === 'primary' ? getActiveFile : getSplitActiveFile;
   const tt = useT();
-  const activeFile = getActiveFile();
+  const activeFile = getFileForGroup();
   const supportInfo = activeFile
     ? getFileSupportInfo(activeFile.name)
     : { supported: true };
@@ -190,7 +191,7 @@ export default function CodeEditor() {
   const handleMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-    registerEditor(editor);
+    if (group === 'primary') registerEditor(editor);
 
     defineBlinkTheme(monaco, 'blinkcode-dark', {
       base: 'vs-dark',

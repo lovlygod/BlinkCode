@@ -12,6 +12,7 @@ import { v4 as uuid } from 'uuid';
 
 const defaultKeybindings: Keybinding[] = [
   { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
+  { id: 'splitEditor', label: 'Split Editor Right', keys: 'Ctrl+\\' },
   { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
   { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
   { id: 'toggleTerminal', label: 'Toggle Terminal', keys: 'Ctrl+`' },
@@ -107,6 +108,7 @@ const initialState: EditorState = {
   files: [],
   openTabs: [],
   activeTabId: null,
+  splitActiveTabId: null,
   viewMode: 'editor',
   browserOpen: false,
   browserUrl: null,
@@ -274,6 +276,13 @@ function getSaveableState(state: EditorState): SavedEditorState {
       };
     }).filter(t => t.serverPath),
     activeTabServerPath: activeFile?.serverPath || null,
+    splitActiveTabServerPath: (() => {
+      if (!state.splitActiveTabId) return null;
+      const tab = state.openTabs.find(t => t.id === state.splitActiveTabId);
+      if (!tab) return null;
+      const file = findNodeById(state.files, tab.fileId);
+      return file?.serverPath || null;
+    })(),
     sidebarWidth: state.sidebarWidth,
     sidebarVisible: state.sidebarVisible,
     terminalOpen: state.terminalOpen,
@@ -310,7 +319,9 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
         else if (idx >= tabs.length) activeId = tabs[tabs.length - 1].id;
         else activeId = tabs[idx]?.id || null;
       }
-      return { ...state, openTabs: tabs, activeTabId: activeId };
+      let splitId = state.splitActiveTabId;
+      if (splitId === tabId) splitId = null;
+      return { ...state, openTabs: tabs, activeTabId: activeId, splitActiveTabId: splitId };
     }
 
     case 'SET_ACTIVE_TAB': return { ...state, activeTabId: action.payload.tabId };
@@ -330,7 +341,7 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
       return { ...state, files: updateNode(state.files, fileId, n => ({ ...n, dirty: false })), pendingCreate: null };
     }
 
-    case 'SHOW_NEW_FILE': return { ...state, pendingCreate: action.payload.type };
+    case 'SHOW_NEW_FILE': return { ...state, pendingCreate: action.payload };
 
     case 'CLEAR_PENDING_CREATE': return { ...state, pendingCreate: null };
 
@@ -579,6 +590,13 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
             if (activeTab) s.activeTabId = activeTab.id;
           }
         }
+        if (p.splitActiveTabServerPath) {
+          const splitFile = findNodeByPath(s.files, p.splitActiveTabServerPath);
+          if (splitFile) {
+            const splitTab = tabs.find(t => t.fileId === splitFile.id);
+            if (splitTab) s.splitActiveTabId = splitTab.id;
+          }
+        }
         if (!s.activeTabId && tabs.length > 0) {
           s.activeTabId = tabs[0].id;
         }
@@ -588,6 +606,15 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'SET_WORKSPACE_DIR': return { ...state, workspaceDir: action.payload };
+
+    case 'SPLIT_TAB': {
+      const tab = state.openTabs.find(t => t.id === action.payload.tabId);
+      return { ...state, splitActiveTabId: tab ? tab.id : state.splitActiveTabId };
+    }
+
+    case 'SET_SPLIT_ACTIVE_TAB': return { ...state, splitActiveTabId: action.payload.tabId };
+
+    case 'CLOSE_SPLIT_TAB': return { ...state, splitActiveTabId: null };
 
     case 'FS_ADD_NODE': {
       const { serverPath, name, type } = action.payload;
@@ -668,6 +695,10 @@ interface Ctx {
   removeToast: (id: string) => void;
   toggleSidebar: () => void;
   getActiveFile: () => FileNode | null;
+  getSplitActiveFile: () => FileNode | null;
+  splitTab: (tabId: string) => void;
+  closeSplitTab: () => void;
+  setSplitActiveTab: (tabId: string | null) => void;
   reorderTabs: (tabs: Tab[]) => void;
   toggleTerminal: () => void;
   setTerminalHeight: (h: number) => void;
@@ -805,6 +836,15 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     if (!tab) return null;
     return findNodeById(state.files, tab.fileId);
   }, [state.activeTabId, state.openTabs, state.files]);
+  const getSplitActiveFile = useCallback(() => {
+    if (!state.splitActiveTabId) return null;
+    const tab = state.openTabs.find(t => t.id === state.splitActiveTabId);
+    if (!tab) return null;
+    return findNodeById(state.files, tab.fileId);
+  }, [state.splitActiveTabId, state.openTabs, state.files]);
+  const splitTab = useCallback((tabId: string) => dispatch({ type: 'SPLIT_TAB', payload: { tabId } }), []);
+  const closeSplitTab = useCallback(() => dispatch({ type: 'CLOSE_SPLIT_TAB' }), []);
+  const setSplitActiveTab = useCallback((tabId: string | null) => dispatch({ type: 'SET_SPLIT_ACTIVE_TAB', payload: { tabId } }), []);
   const reorderTabs = useCallback((tabs: Tab[]) => dispatch({ type: 'REORDER_TABS', payload: { tabs } }), []);
   const toggleTerminal = useCallback(() => dispatch({ type: 'TOGGLE_TERMINAL' }), []);
   const setTerminalHeight = useCallback((h: number) => dispatch({ type: 'SET_TERMINAL_HEIGHT', payload: { height: h } }), []);
@@ -1006,6 +1046,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
         switch (kb.id) {
           case 'commandPalette': window.dispatchEvent(new CustomEvent('blinkcode:toggleCommandPalette')); break;
+          case 'splitEditor': {
+            const tab = s.openTabs.find(t => t.id === s.activeTabId);
+            if (tab && !s.splitActiveTabId) dispatch({ type: 'SPLIT_TAB', payload: { tabId: tab.id } });
+            else if (s.splitActiveTabId) dispatch({ type: 'CLOSE_SPLIT_TAB' });
+            break;
+          }
           case 'toggleSidebar': dispatch({ type: 'TOGGLE_SIDEBAR' }); break;
           case 'toggleTerminal': dispatch({ type: 'TOGGLE_TERMINAL' }); break;
           case 'toggleAI': dispatch({ type: 'TOGGLE_AI_PANEL' }); break;
@@ -1056,7 +1102,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setViewMode, openBrowserPreview, closeBrowserPreview, setBrowserUrl,
       setBrowserLoading, setBrowserNavState, setBrowserError,
       toggleAIPanel, setSidebarWidth, addToast, removeToast,
-      toggleSidebar, getActiveFile, reorderTabs, toggleTerminal, setTerminalHeight,
+      toggleSidebar, getActiveFile, getSplitActiveFile, splitTab, closeSplitTab, setSplitActiveTab, reorderTabs, toggleTerminal, setTerminalHeight,
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,

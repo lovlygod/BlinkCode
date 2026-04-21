@@ -75,6 +75,7 @@ export interface EditorState {
   files: FileNode[];
   openTabs: Tab[];
   activeTabId: string | null;
+  splitActiveTabId: string | null;
   viewMode: 'editor' | 'split';
   browserOpen: boolean;
   browserUrl: string | null;
@@ -92,13 +93,14 @@ export interface EditorState {
   terminalInstances: TerminalInstance[];
   activeTerminalId: string | null;
   settings: EditorSettings;
-  pendingCreate: 'file' | 'folder' | null;
+  pendingCreate: { type: 'file' | 'folder'; parentId?: string } | null;
   workspaceDir: string;
 }
 
 export interface SavedEditorState {
   openTabs?: Array<{ serverPath: string; name: string; language: string; isBinary?: boolean }>;
   activeTabServerPath?: string | null;
+  splitActiveTabServerPath?: string | null;
   sidebarWidth?: number;
   sidebarVisible?: boolean;
   terminalOpen?: boolean;
@@ -156,4 +158,7 @@ export type EditorAction =
   | { type: 'UPDATE_SETTINGS'; payload: Partial<EditorSettings> }
   | { type: 'SET_WORKSPACE_DIR'; payload: string }
   | { type: 'FS_ADD_NODE'; payload: { serverPath: string; name: string; type: 'file' | 'folder' } }
-  | { type: 'FS_REMOVE_NODE'; payload: { serverPath: string } };
+  | { type: 'FS_REMOVE_NODE'; payload: { serverPath: string } }
+  | { type: 'SPLIT_TAB'; payload: { tabId: string } }
+  | { type: 'SET_SPLIT_ACTIVE_TAB'; payload: { tabId: string | null } }
+  | { type: 'CLOSE_SPLIT_TAB' };
