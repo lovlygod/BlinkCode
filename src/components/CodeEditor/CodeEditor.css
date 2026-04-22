@@ -108,15 +108,34 @@
   animation: emptySlideIn 300ms ease;
   position: relative;
   z-index: 1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.blink-blue {
+  color: #4f8cff;
+}
+
+.empty-corner-logo {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  opacity: 0.25;
+  z-index: 2;
 }
 
 .empty-logo {
-  width: 74px;
-  height: 74px;
+  height: 72px;
   opacity: 0.95;
 }
 
-.empty-icon { color: var(--accent); }
+.empty-icon {
+  color: var(--accent);
+  display: flex;
+  justify-content: center;
+}
 
 .empty-welcome {
   font-size: 24px;
@@ -185,8 +204,7 @@
 }
 
 .onboarding-logo {
-  width: 92px;
-  height: 92px;
+  height: 72px;
 }
 
 .onboarding-title {

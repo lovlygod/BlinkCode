@@ -1066,7 +1066,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
             <div className="empty-icon">
               <BlinkLogo className="empty-logo" />
             </div>
-            <p className="empty-welcome">{tt('empty.welcome')}</p>
+            <p className="empty-welcome">{tt('empty.welcome').replace('BlinkCode', '').replace('blinkcode', '')}<span className="blink-blue">Blink</span>Code</p>
           </div>
         )}
         {showOnboarding && (

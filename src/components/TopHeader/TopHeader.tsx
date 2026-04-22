@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useT } from '../../hooks/useT';
 import { useEffect, useState } from 'react';
-import BlinkLogo from '../common/BlinkLogo';
+import BlinkLogoIcon from '../common/BlinkLogoIcon';
 import './TopHeader.css';
 
 export default function TopHeader() {
@@ -103,7 +103,7 @@ export default function TopHeader() {
     <header className="top-header">
       <div className="top-left">
         <div className="top-logo-wrap">
-          <BlinkLogo className="top-logo" />
+          <BlinkLogoIcon className="top-logo" />
         </div>
         <button className="icon-btn" onClick={toggleSidebar} title="Toggle Sidebar">
           {state.sidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Minus, ChevronRight } from 'lucide-react';
-import BlinkLogo from '../common/BlinkLogo';
+import BlinkLogoIcon from '../common/BlinkLogoIcon';
 import { getLandingDict } from '../../utils/landingI18n';
 import './Landing.css';
 
@@ -50,7 +50,7 @@ export default function Landing() {
       <nav className="landing-nav">
         <div className="landing-nav-left">
           <a href={prefix || '/'} className="landing-nav-logo-link">
-            <BlinkLogo className="landing-nav-logo" />
+            <BlinkLogoIcon className="landing-nav-logo" />
           </a>
           <a href="https://github.com/lovlygod/BlinkCode" target="_blank" rel="noopener noreferrer" className="landing-nav-link">GitHub</a>
           <div className="landing-nav-lang">
@@ -143,7 +143,7 @@ export default function Landing() {
 
       <footer className="landing-footer">
         <div className="landing-footer-left">
-          <BlinkLogo className="landing-footer-logo" />
+          <BlinkLogoIcon className="landing-footer-logo" />
           <span className="landing-footer-name">
             <span className="blink">Blink</span><span className="wht">Code</span>
           </span>
