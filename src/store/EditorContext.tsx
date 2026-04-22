@@ -52,6 +52,7 @@ const defaultSettings: EditorSettings = {
   animations: true,
   showFileIcons: true,
   compactMode: false,
+  dotGridColor: '#4f8cff',
   keybindings: defaultKeybindings,
   language: 'en',
   colorScheme: 'dark',

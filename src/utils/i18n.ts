@@ -119,6 +119,8 @@ const en: Record<string, string> = {
   'settings.showFileIcons.desc': 'Show file type icons in the sidebar',
   'settings.compactMode': 'Compact Mode',
   'settings.compactMode.desc': 'Reduce spacing for denser UI',
+  'settings.dotGridColor': 'Dot Grid Color',
+  'settings.dotGridColor.desc': 'Color of the interactive dot grid on the welcome screen',
 
   'cursorStyle.line': 'Line',
   'cursorStyle.block': 'Block',
@@ -361,6 +363,8 @@ const ru: Record<string, string> = {
   'settings.showFileIcons.desc': 'Показывать иконки типов файлов в боковой панели',
   'settings.compactMode': 'Компактный режим',
   'settings.compactMode.desc': 'Уменьшить отступы для плотного интерфейса',
+  'settings.dotGridColor': 'Цвет точек',
+  'settings.dotGridColor.desc': 'Цвет интерактивной сетки точек на экране приветствия',
 
   'cursorStyle.line': 'Линия',
   'cursorStyle.block': 'Блок',

@@ -4,6 +4,7 @@ import type { EditorSettings } from '../../types';
 import { THEME_LIST, type ThemeName } from '../../store/EditorContext';
 import { X, Settings, Keyboard, RotateCcw, ChevronDown } from 'lucide-react';
 import { useT } from '../../hooks/useT';
+import ColorPicker from '../common/ColorPicker';
 import './SettingsPanel.css';
 
 type Tab = 'general' | 'keybindings';
@@ -512,6 +513,19 @@ export default function SettingsPanel() {
                         <span className="toggle-track"><span className="toggle-thumb" /></span>
                         <span className="toggle-label">{s.compactMode ? tt('on') : tt('off')}</span>
                       </button>
+                    </div>
+                  </div>
+                  <hr className="settings-divider" />
+
+                  <div className="settings-row">
+                    <div className="settings-row-label">
+                      <div>
+                        <div className="settings-row-name">{tt('settings.dotGridColor')}</div>
+                        <div className="settings-row-desc">{tt('settings.dotGridColor.desc')}</div>
+                      </div>
+                    </div>
+                    <div className="settings-row-control">
+                      <ColorPicker value={s.dotGridColor} onChange={c => updateSettings({ dotGridColor: c })} direction="up" />
                     </div>
                   </div>
                 </div>

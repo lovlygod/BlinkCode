@@ -6,6 +6,7 @@ import { FileWarning, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useT } from '../../hooks/useT';
 import { getDetailedFileSupportInfo, getFileSupportInfo, getMonacoLanguage } from '../../utils/supportedWebFiles';
 import BlinkLogo from '../common/BlinkLogo';
+import DotGrid from '../common/DotGrid';
 import './CodeEditor.css';
 
 function getMonacoTheme(theme: string, colorScheme: string): string {
@@ -1061,6 +1062,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   if (!activeFile) {
     return (
       <div className="editor-empty">
+        <DotGrid color={state.settings.dotGridColor} />
         {!showOnboarding && (
           <div className="empty-inner">
             <div className="empty-icon">

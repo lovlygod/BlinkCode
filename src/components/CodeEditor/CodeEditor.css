@@ -88,16 +88,7 @@
   position: relative;
 }
 
-.editor-empty::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--text-ghost) 34%, transparent) 1px, transparent 1px);
-  background-size: 18px 18px;
-  background-position: center;
-  opacity: 0.55;
-  pointer-events: none;
-}
+/* dot grid is now rendered via DotGrid canvas component */
 
 .empty-inner {
   display: flex;
@@ -110,6 +101,7 @@
   z-index: 1;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events: none;
 }
 
 .blink-blue {
@@ -126,9 +118,21 @@
   z-index: 2;
 }
 
+.empty-corner-logo {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  opacity: 0.25;
+  z-index: 2;
+}
+
 .empty-logo {
-  height: 72px;
+  width: 260px;
+  height: 80px;
   opacity: 0.95;
+  margin: 0 auto;
 }
 
 .empty-icon {
@@ -204,7 +208,8 @@
 }
 
 .onboarding-logo {
-  height: 72px;
+  width: 260px;
+  height: 80px;
 }
 
 .onboarding-title {
