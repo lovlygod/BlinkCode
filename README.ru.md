@@ -23,7 +23,7 @@
 Он подходит для:
 - открытия локальных папок проекта
 - редактирования кода и конфигов
-- восстановления состояния между запусками
+- восстановления рабочего состояния между запусками
 - использования встроенного терминала
 - открытия локальных dev-server и web-ссылок прямо внутри приложения через встроенный web preview
 - упаковки в Windows desktop-приложение
@@ -31,6 +31,8 @@
 ## Скриншоты
 
 ### 1. Приветственный экран
+
+Приветственный экран теперь включает анимированный логотип Blink, интерактивную сетку точек и более чистое empty-state оформление.
 
 <p align="center">
   <img src="./screenshots/welcome-screen-ru.png" alt="BlinkCode welcome screen RU" width="78%" />
@@ -44,11 +46,20 @@
 
 ### 3. Настройки
 
+Панель настроек оптимизирована для desktop-использования и теперь включает настройку цвета сетки точек.
+
 <p align="center">
   <img src="./screenshots/settings-screen-ru.png" alt="BlinkCode settings screen RU" width="78%" />
 </p>
 
 ## Основные возможности
+
+### Welcome Screen и оформление
+- анимированный welcome-логотип Blink с восстановленным typewriter-таймингом
+- синий `Blink` в логотипе в соответствии с визуальным стилем проекта
+- интерактивная сетка точек на экране приветствия на [`DotGrid`](src/components/common/DotGrid.tsx)
+- настройка цвета сетки точек с сохранением в [`EditorContext`](src/store/EditorContext.tsx)
+- тёмный кастомный color picker в [`ColorPicker`](src/components/common/ColorPicker.tsx) вместо системного диалога выбора цвета
 
 ### Стабильность и безопасность
 - более безопасная обработка бинарных и неподдерживаемых файлов
@@ -68,6 +79,13 @@
 - activity bar в [`ActivityBar`](src/components/ActivityBar/ActivityBar.tsx)
 - встроенный browser preview в [`BrowserPreview`](src/components/BrowserPreview/BrowserPreview.tsx) для локальных сайтов и ссылок из терминала
 - Windows packaging через [`electron-builder`](package.json)
+
+### Внешний вид и настройки
+- переключение языка интерфейса между English и Russian
+- несколько тем оформления и цветовых схем
+- настройка цвета сетки точек в [`SettingsPanel`](src/components/SettingsPanel/SettingsPanel.tsx)
+- кастомный тематический color picker, который открывается внутри панели настроек
+- компактный режим, анимации, иконки файлов и другие desktop-настройки
 
 ### Работа с проектами
 - открытие локальных папок
@@ -105,7 +123,13 @@ npm install
 npm run dev
 ```
 
-Открыть в браузере: `http://localhost:3001`
+Открыть в браузере: `http://127.0.0.1:5173`
+
+## Запуск desktop-версии в деве
+
+```bash
+npm run electron:dev
+```
 
 ## Desktop-сборка
 
@@ -167,6 +191,8 @@ BlinkCode/
 - глобальные стили: [`src/index.css`](src/index.css)
 - состояние редактора: [`src/store/EditorContext.tsx`](src/store/EditorContext.tsx)
 - правила поддержки файлов: [`src/utils/supportedWebFiles.ts`](src/utils/supportedWebFiles.ts)
+- welcome-сетка точек: [`src/components/common/DotGrid.tsx`](src/components/common/DotGrid.tsx)
+- тематический color picker: [`src/components/common/ColorPicker.tsx`](src/components/common/ColorPicker.tsx)
 - Electron main process: [`electron/main.mjs`](electron/main.mjs)
 - backend API и terminal server: [`server/index.js`](server/index.js)
 - PTY manager: [`server/pty.js`](server/pty.js)

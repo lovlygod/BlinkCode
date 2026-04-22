@@ -32,7 +32,7 @@ It is built for:
 
 ### 1. Welcome Screen
 
-The first screen focuses on a clean workspace, full project explorer visibility, and a desktop-style shell around the editor.
+The welcome screen now includes the animated Blink wordmark, an interactive dot grid background, and a cleaner empty-state layout for desktop workflows.
 
 <p align="center">
   <img src="./screenshots/welcome-screen.png" alt="BlinkCode welcome screen" width="78%" />
@@ -48,13 +48,20 @@ The editor view is built around Monaco, project tabs, sidebar navigation, and de
 
 ### 3. Settings
 
-The settings experience is optimized for desktop use, with quick access to editor preferences and appearance controls.
+The settings experience is optimized for desktop use, with quick access to editor preferences, appearance controls, and dot grid color customization.
 
 <p align="center">
   <img src="./screenshots/settings-screen.png" alt="BlinkCode settings screen" width="78%" />
 </p>
 
 ## Main Features
+
+### Welcome Experience and Branding
+- animated Blink welcome logo with restored typewriter timing
+- blue `Blink` wordmark styling to match the app brand
+- interactive welcome-screen dot grid rendered by [`DotGrid`](src/components/common/DotGrid.tsx)
+- configurable dot grid color stored in [`EditorContext`](src/store/EditorContext.tsx)
+- themed custom color picker in [`ColorPicker`](src/components/common/ColorPicker.tsx) instead of the default system color dialog
 
 ### Stability and Safety
 - safer handling for binary and unsupported files
@@ -74,6 +81,13 @@ The settings experience is optimized for desktop use, with quick access to edito
 - activity bar in [`ActivityBar`](src/components/ActivityBar/ActivityBar.tsx)
 - embedded browser preview in [`BrowserPreview`](src/components/BrowserPreview/BrowserPreview.tsx) for local sites and terminal links
 - Windows packaging through [`electron-builder`](package.json)
+
+### Appearance and Settings
+- language switching for English and Russian
+- multiple editor themes and color schemes
+- welcome-screen dot grid color setting in [`SettingsPanel`](src/components/SettingsPanel/SettingsPanel.tsx)
+- custom themed color picker that opens upward inside the settings panel
+- compact mode, animations, file icons, and other desktop UI preferences
 
 ### Project Workflow
 - opening local folders
@@ -111,7 +125,15 @@ npm install
 npm run dev
 ```
 
-Open in browser: `http://localhost:3001`
+Open in browser: `http://127.0.0.1:5173`
+
+## Desktop Development
+
+Run the Electron app against the local Vite dev server:
+
+```bash
+npm run electron:dev
+```
 
 ## Desktop Build
 
@@ -173,6 +195,8 @@ BlinkCode/
 - global styling: [`src/index.css`](src/index.css)
 - editor state: [`src/store/EditorContext.tsx`](src/store/EditorContext.tsx)
 - file support rules: [`src/utils/supportedWebFiles.ts`](src/utils/supportedWebFiles.ts)
+- welcome dot grid: [`src/components/common/DotGrid.tsx`](src/components/common/DotGrid.tsx)
+- themed color picker: [`src/components/common/ColorPicker.tsx`](src/components/common/ColorPicker.tsx)
 - Electron main process: [`electron/main.mjs`](electron/main.mjs)
 - backend API and terminal server: [`server/index.js`](server/index.js)
 - PTY manager: [`server/pty.js`](server/pty.js)
