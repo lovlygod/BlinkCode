@@ -10,6 +10,7 @@ import { execFile } from 'child_process';
 import { fileURLToPath } from 'url';
 import { saveState, loadState, saveWorkspacePath, loadWorkspacePath, addRecentProject, loadRecentProjects } from './db.js';
 import { createPtyManager } from './pty.js';
+import { attachLspBridge, parseLspUrl } from './lsp.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -325,6 +326,7 @@ const server = createServer(app);
 
 const wss = new WebSocketServer({ noServer: true });
 const fsWss = new WebSocketServer({ noServer: true });
+const lspWss = new WebSocketServer({ noServer: true });
 
 server.on('upgrade', (request, socket, head) => {
   if (request.url === '/ws/terminal') {
@@ -335,9 +337,20 @@ server.on('upgrade', (request, socket, head) => {
     fsWss.handleUpgrade(request, socket, head, (ws) => {
       fsWss.emit('connection', ws, request);
     });
+  } else if (request.url && request.url.startsWith('/ws/lsp/')) {
+    const parsed = parseLspUrl(request.url);
+    if (!parsed) { socket.destroy(); return; }
+    lspWss.handleUpgrade(request, socket, head, (ws) => {
+      attachLspBridge(ws, parsed.lang, workspace);
+    });
   } else {
     socket.destroy();
   }
+});
+
+lspWss.on('error', (error) => {
+  if (error?.code === 'EADDRINUSE') return;
+  console.error('LSP WebSocket error:', error);
 });
 
 wss.on('error', (error) => {

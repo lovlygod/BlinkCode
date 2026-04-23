@@ -574,7 +574,7 @@ export default function SettingsPanel() {
         </div>
         <div className="settings-footer">
           <span className="settings-footer-blink">Blink</span><span className="settings-footer-code">Code</span>
-          <span className="settings-footer-version">v0.2.0</span>
+          <span className="settings-footer-version">v0.3.0</span>
         </div>
       </div>
     </div>

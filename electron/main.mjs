@@ -143,7 +143,19 @@ async function createWindow() {
   mainWindow.webContents.setVisualZoomLevelLimits(1, 1);
   if (app.isPackaged) {
     mainWindow.maximize();
+  } else {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+    const isF12 = input.key === 'F12';
+    const isCtrlShiftI = input.control && input.shift && (input.key === 'I' || input.key === 'i');
+    if (isF12 || isCtrlShiftI) {
+      mainWindow?.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

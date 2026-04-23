@@ -7,6 +7,7 @@ import { useT } from '../../hooks/useT';
 import { getDetailedFileSupportInfo, getFileSupportInfo, getMonacoLanguage } from '../../utils/supportedWebFiles';
 import BlinkLogo from '../common/BlinkLogo';
 import DotGrid from '../common/DotGrid';
+import { attachLspToEditor } from '../../lsp/session';
 import './CodeEditor.css';
 
 function getMonacoTheme(theme: string, colorScheme: string): string {
@@ -1050,6 +1051,8 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
       hideCursorInOverviewRuler: true,
       overviewRulerLanes: 0,
       scrollbar: { verticalScrollbarSize: 5, horizontalScrollbarSize: 5, vertical: 'auto', horizontal: 'auto' },
+      wordBasedSuggestions: 'off',
+      suggest: { showWords: false },
     });
 
     editor.onDidChangeCursorPosition((e: any) => {
@@ -1057,7 +1060,9 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
         detail: { line: e.position.lineNumber, column: e.position.column },
       }));
     });
-  }, []);
+
+    try { attachLspToEditor(monaco, editor, state.workspaceDir || ''); } catch {}
+  }, [state.workspaceDir]);
 
   if (!activeFile) {
     return (
