@@ -74,6 +74,46 @@ The settings experience is optimized for desktop use, with quick access to edito
 - autosave and state restore through [`EditorContext`](src/store/EditorContext.tsx)
 - tabs with dirty-state indicators in [`TabsHeader`](src/components/TabsHeader/TabsHeader.tsx)
 - breadcrumbs in [`Breadcrumb`](src/components/Breadcrumb/Breadcrumb.tsx)
+- bracket pair colorization and indent guides configurable from the settings panel
+- word-based suggestions disabled in favor of real LSP completions
+
+### Language Intelligence (LSP)
+
+BlinkCode launches real language servers and bridges them to Monaco over WebSocket, so autocomplete, diagnostics and refactors match what you get in VS Code.
+
+- TypeScript / JavaScript / TSX / JSX via [`typescript-language-server`](package.json)
+- HTML, CSS / SCSS / LESS, JSON / JSONC via [`vscode-langservers-extracted`](package.json)
+- project-aware IntelliSense backed by the workspace `tsconfig.json` / `jsconfig.json`
+- auto-import on completion (selecting `useState` adds `import { useState } from 'react'`)
+- hover with type signatures and documentation
+- go to definition (`F12`, `Ctrl+Click`)
+- signature help inside calls
+- rename symbol (`F2`) with cross-file edits
+- find all references (`Shift+F12`)
+- document outline / symbols (`Ctrl+Shift+O`)
+- format document (`Shift+Alt+F`) and format selection (`Ctrl+K Ctrl+F`)
+- code actions / quick fixes (`Ctrl+.`) including add missing import and organize imports
+- inline diagnostics (errors, warnings, hints) with safe hover rendering
+- Monaco's bundled TS/JS/HTML/CSS/JSON services are disabled so the real LSP is the single source of truth
+- WebSocket bridge in [`server/lsp.js`](server/lsp.js) with `ELECTRON_RUN_AS_NODE` support for packaged builds
+- Monaco adapter, JSON-RPC client and session cache in [`src/lsp/`](src/lsp)
+- LSP binaries shipped via `asarUnpack` so IntelliSense works in both dev and installer / portable builds
+
+### Navigation and Productivity
+- Command Palette (`Ctrl+Shift+P`) in [`CommandPalette`](src/components/CommandPalette/CommandPalette.tsx)
+- Quick Open fuzzy file picker (`Ctrl+P`) in [`QuickOpen`](src/components/QuickOpen/QuickOpen.tsx)
+- Go to line (`Ctrl+G`) via Monaco
+- multi-cursor and column selection via Monaco
+- status bar in [`StatusBar`](src/components/StatusBar/StatusBar.tsx)
+- toast notifications in [`Toast`](src/components/Toast/Toast.tsx)
+
+### AI Assistant
+- integrated AI panel in [`AIPanel`](src/components/AIPanel/AIPanel.tsx) for chat-style prompts alongside the editor
+
+### Developer Experience
+- DevTools open automatically in dev mode (`npm run electron:dev`)
+- `F12` and `Ctrl+Shift+I` toggle DevTools in the Electron window
+- landing onboarding in [`Landing`](src/components/Landing)
 
 ### Desktop Features
 - custom Electron shell through [`electron/main.mjs`](electron/main.mjs)
@@ -146,13 +186,14 @@ Build artifacts are written into [`release/`](release).
 ## Release Files
 
 Current Windows artifacts:
-- installer: [`release/BlinkCode-Setup-0.2.0-x64.exe`](release/BlinkCode-Setup-0.2.0-x64.exe)
-- portable: [`release/BlinkCode-Portable-0.2.0-x64.exe`](release/BlinkCode-Portable-0.2.0-x64.exe)
+- installer: [`release/BlinkCode-Setup-0.3.0-x64.exe`](release/BlinkCode-Setup-0.3.0-x64.exe)
+- portable: [`release/BlinkCode-Portable-0.3.0-x64.exe`](release/BlinkCode-Portable-0.3.0-x64.exe)
 
 ## Tech Stack
 
 - frontend: React + TypeScript + Vite
 - editor: Monaco via [`@monaco-editor/react`](package.json)
+- language servers: [`typescript-language-server`](package.json) and [`vscode-langservers-extracted`](package.json) proxied over WebSocket
 - desktop shell: Electron
 - packaging: [`electron-builder`](package.json)
 - terminal rendering: [`xterm`](package.json)
@@ -169,18 +210,25 @@ BlinkCode/
 ├── server/
 │   ├── db.js
 │   ├── index.js
+│   ├── lsp.js
 │   └── pty.js
 ├── screenshots/
 ├── src/
 │   ├── components/
 │   │   ├── ActivityBar/
+│   │   ├── AIPanel/
 │   │   ├── CodeEditor/
+│   │   ├── CommandPalette/
+│   │   ├── QuickOpen/
 │   │   ├── Sidebar/
+│   │   ├── StatusBar/
 │   │   ├── TabsHeader/
 │   │   ├── Terminal/
+│   │   ├── Toast/
 │   │   ├── TopHeader/
 │   │   └── ...
 │   ├── hooks/
+│   ├── lsp/
 │   ├── store/
 │   ├── types/
 │   └── utils/
@@ -200,6 +248,9 @@ BlinkCode/
 - Electron main process: [`electron/main.mjs`](electron/main.mjs)
 - backend API and terminal server: [`server/index.js`](server/index.js)
 - PTY manager: [`server/pty.js`](server/pty.js)
+- LSP WebSocket bridge: [`server/lsp.js`](server/lsp.js)
+- Monaco LSP adapter: [`src/lsp/monacoAdapter.ts`](src/lsp/monacoAdapter.ts)
+- LSP session cache and URI resolver: [`src/lsp/session.ts`](src/lsp/session.ts)
 
 ## License
 
