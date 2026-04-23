@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 build/
-docs/
+docs/IDEAS.md
 release/
 _research/
 coverage/
