@@ -30,17 +30,17 @@ BlinkCode — это Electron-приложение из трёх частей:
 flowchart LR
     subgraph Electron["Electron main process<br/>(electron/main.mjs)"]
         direction TB
-        M[окна · меню · titlebar<br/>файловые диалоги]
+        M["окна · меню · titlebar<br/>файловые диалоги"]
     end
 
     subgraph Backend["Локальный Node-бэкенд<br/>(server/index.js)"]
         direction TB
-        B[HTTP + WebSocket на :3001<br/>PTY manager · LSP bridge]
+        B["HTTP + WebSocket на :3001<br/>PTY manager · LSP bridge"]
     end
 
     subgraph Renderer["Renderer (React + Vite)<br/>src/App.tsx"]
         direction TB
-        R[Monaco · Terminal (xterm)<br/>Sidebar · Tabs · AI<br/>LSP client (src/lsp/)]
+        R["Monaco · Terminal (xterm)<br/>Sidebar · Tabs · AI<br/>LSP client (src/lsp/)"]
     end
 
     Electron <-- IPC --> Backend
