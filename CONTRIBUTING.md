@@ -38,4 +38,4 @@ If you want to contribute to [`BlinkCode`](README.md), you can help with:
 
 ## License
 
-By contributing to [`BlinkCode`](README.md), you agree that your contributions will be distributed under the same license as the project: [`MIT`](LICENSE)
+By contributing to [`BlinkCode`](README.md), you agree that your contributions will be distributed under the same license as the project: [Apache 2.0](LICENSE)
