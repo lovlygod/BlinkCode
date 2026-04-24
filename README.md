@@ -121,7 +121,7 @@ Full documentation lives in [`docs/`](./docs/README.md):
 
 | English | Русский |
 |---|---|
-| [Documentation home](./docs/EN/README.md) | [Главная документации](./docs/RU/README.md) |
+| [Documentation home](./docs/README.md) | [Главная документации](./docs/README.md) |
 | [Features](./docs/EN/features.md) | [Возможности](./docs/RU/features.md) |
 | [Keyboard shortcuts](./docs/EN/shortcuts.md) | [Горячие клавиши](./docs/RU/shortcuts.md) |
 | [Architecture](./docs/EN/architecture.md) | [Архитектура](./docs/RU/architecture.md) |
