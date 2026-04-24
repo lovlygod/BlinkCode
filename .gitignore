@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 build/
-docs/IDEAS.md
 release/
 _research/
 coverage/
