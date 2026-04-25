@@ -178,6 +178,50 @@ export async function fetchRecentProjects(): Promise<Array<{ path: string; name:
   return Array.isArray(data.projects) ? data.projects : [];
 }
 
+export interface WorkspaceSearchOptions {
+  query: string;
+  replacement?: string;
+  regex?: boolean;
+  matchCase?: boolean;
+  wholeWord?: boolean;
+  include?: string;
+  exclude?: string;
+}
+
+export interface WorkspaceSearchMatch {
+  line: number;
+  column: number;
+  length: number;
+  preview: string;
+}
+
+export interface WorkspaceSearchFileResult {
+  path: string;
+  matches: WorkspaceSearchMatch[];
+}
+
+export interface WorkspaceSearchResponse {
+  results: WorkspaceSearchFileResult[];
+  totalMatches: number;
+  truncated: boolean;
+}
+
+export async function searchWorkspace(options: WorkspaceSearchOptions): Promise<WorkspaceSearchResponse> {
+  return request(`${API}/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+}
+
+export async function replaceWorkspace(options: WorkspaceSearchOptions): Promise<{ changedFiles: Array<{ path: string; replacements: number }>; totalReplacements: number }> {
+  return request(`${API}/search/replace`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+}
+
 export interface SettingsResponse {
   defaults: EditorSettings;
   global: Partial<EditorSettings>;

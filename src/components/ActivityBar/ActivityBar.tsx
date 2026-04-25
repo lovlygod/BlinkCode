@@ -1,10 +1,10 @@
-import { Files, Settings } from 'lucide-react';
+import { Files, Search, Settings } from 'lucide-react';
 import { useEditor } from '../../store/EditorContext';
 import { useT } from '../../hooks/useT';
 import './ActivityBar.css';
 
 export default function ActivityBar() {
-  const { state, toggleSidebar, toggleSettings } = useEditor();
+  const { state, toggleSidebar, toggleSearchPanel, toggleSettings } = useEditor();
   const tt = useT();
 
   return (
@@ -16,6 +16,13 @@ export default function ActivityBar() {
           title={tt('explorer.title')}
         >
           <Files size={22} />
+        </button>
+        <button
+          className={`activity-btn ${state.showSearchPanel ? 'active' : ''}`}
+          onClick={toggleSearchPanel}
+          title={tt('search.title')}
+        >
+          <Search size={22} />
         </button>
       </div>
 

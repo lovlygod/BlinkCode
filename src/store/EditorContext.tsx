@@ -14,6 +14,7 @@ import { v4 as uuid } from 'uuid';
 const defaultKeybindings: Keybinding[] = [
   { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
   { id: 'quickOpen', label: 'Quick Open', keys: 'Ctrl+P' },
+  { id: 'workspaceSearch', label: 'Search in Workspace', keys: 'Ctrl+Shift+F' },
   { id: 'splitEditor', label: 'Split Editor Right', keys: 'Ctrl+\\' },
   { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
   { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
@@ -121,6 +122,7 @@ const initialState: EditorState = {
   browserError: null,
   showAIPanel: false,
   showSettings: false,
+  showSearchPanel: false,
   sidebarWidth: 250,
   sidebarVisible: true,
   toasts: [],
@@ -531,6 +533,7 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'TOGGLE_SETTINGS': return { ...state, showSettings: !state.showSettings };
+    case 'TOGGLE_SEARCH_PANEL': return { ...state, showSearchPanel: !state.showSearchPanel, sidebarVisible: true };
 
     case 'UPDATE_SETTINGS': {
       const settings = { ...state.settings, ...action.payload };
@@ -735,6 +738,7 @@ interface Ctx {
   loadFromServer: () => Promise<void>;
   openFolderFromServer: (dirPath: string) => Promise<void>;
   toggleSettings: () => void;
+  toggleSearchPanel: () => void;
   updateSettings: (s: Partial<EditorSettings>) => void;
   openSettingsJson: (scope?: 'global' | 'workspace') => Promise<void>;
   registerEditor: (editor: any) => void;
@@ -896,6 +900,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const clearTerminal = useCallback((instanceId: string) => dispatch({ type: 'CLEAR_TERMINAL', payload: { instanceId } }), []);
   const collapseAll = useCallback(() => dispatch({ type: 'COLLAPSE_ALL' }), []);
   const toggleSettings = useCallback(() => dispatch({ type: 'TOGGLE_SETTINGS' }), []);
+  const toggleSearchPanel = useCallback(() => dispatch({ type: 'TOGGLE_SEARCH_PANEL' }), []);
   const updateSettings = useCallback((s: Partial<EditorSettings>) => dispatch({ type: 'UPDATE_SETTINGS', payload: s }), []);
 
   const openSettingsJson = useCallback(async (scope: 'global' | 'workspace' = 'global') => {
@@ -1130,6 +1135,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         switch (kb.id) {
           case 'commandPalette': window.dispatchEvent(new CustomEvent('blinkcode:toggleCommandPalette')); break;
           case 'quickOpen': window.dispatchEvent(new CustomEvent('blinkcode:openQuickOpen', { detail: { openQuickOpen: true } })); break;
+          case 'workspaceSearch': dispatch({ type: 'TOGGLE_SEARCH_PANEL' }); break;
           case 'splitEditor': {
             const tab = s.openTabs.find(t => t.id === s.activeTabId);
             if (tab && !s.splitActiveTabId) dispatch({ type: 'SPLIT_TAB', payload: { tabId: tab.id } });
@@ -1199,7 +1205,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,
-      toggleSettings, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
+      toggleSettings, toggleSearchPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
     }}>
       {children}
     </EditorContext.Provider>

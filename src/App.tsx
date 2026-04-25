@@ -3,6 +3,7 @@ import TopHeader from './components/TopHeader/TopHeader';
 import ActivityBar from './components/ActivityBar/ActivityBar';
 import TabsHeader from './components/TabsHeader/TabsHeader';
 import Sidebar from './components/Sidebar/Sidebar';
+import SearchPanel from './components/SearchPanel/SearchPanel';
 import CodeEditor from './components/CodeEditor/CodeEditor';
 import TerminalPanel from './components/Terminal/Terminal';
 import AIPanel from './components/AIPanel/AIPanel';
@@ -26,6 +27,7 @@ function EditorLayout() {
       <div className="main-area">
         <ActivityBar />
         <Sidebar />
+        <SearchPanel />
         <div className="editor-area">
           {!state.browserOpen && (
             <>

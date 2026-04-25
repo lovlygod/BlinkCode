@@ -88,6 +88,7 @@ export interface EditorState {
   browserError: string | null;
   showAIPanel: boolean;
   showSettings: boolean;
+  showSearchPanel: boolean;
   sidebarWidth: number;
   sidebarVisible: boolean;
   toasts: ToastItem[];
@@ -158,6 +159,7 @@ export type EditorAction =
   | { type: 'CLEAR_PENDING_CREATE' }
   | { type: 'RESTORE_STATE'; payload: SavedEditorState }
   | { type: 'TOGGLE_SETTINGS' }
+  | { type: 'TOGGLE_SEARCH_PANEL' }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<EditorSettings> }
   | { type: 'SET_WORKSPACE_DIR'; payload: string }
   | { type: 'FS_ADD_NODE'; payload: { serverPath: string; name: string; type: 'file' | 'folder' } }

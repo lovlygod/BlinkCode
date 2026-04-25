@@ -25,6 +25,7 @@ import {
   loadWorkspaceSettingsRaw,
   saveWorkspaceSettingsRaw,
 } from './settings.js';
+import { searchWorkspace, replaceWorkspace } from './search.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -183,6 +184,24 @@ app.get('/api/files', (req, res) => {
   };
   walk(workspace, '');
   res.json({ files });
+});
+
+app.post('/api/search', (req, res) => {
+  try {
+    const result = searchWorkspace(workspace, req.body || {});
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err?.message || 'Search failed' });
+  }
+});
+
+app.post('/api/search/replace', (req, res) => {
+  try {
+    const result = replaceWorkspace(workspace, req.body || {});
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err?.message || 'Replace failed' });
+  }
 });
 
 app.get('/api/file', (req, res) => {

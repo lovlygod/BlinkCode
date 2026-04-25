@@ -40,11 +40,11 @@ These features define BlinkCode as an actual IDE rather than a simple text edito
 ### 1.2 Global search and replace
 
 - **Priority:** P0
-- **Status:** 🧭 Planned
+- **Status:** ✅ Done
 - **Description:** Add workspace-wide text search and replace with file filters, result previews and safe batch replacement.
+- **Current state:** Implemented with a backend recursive search/replace service, `/api/search` and `/api/search/replace` endpoints, a dedicated Search panel, regex/case/whole-word options, include/exclude filters, grouped file results, preview highlighting, click-to-open matches, and replace-all flow.
 - **Why it matters:** Local projects quickly become hard to navigate without fast search across all files.
-- **Expected behavior:** Users should be able to search by text or regex, exclude folders, preview matches, open results, and replace selected matches.
-- **Implementation direction:** Use a backend search process, preferably `ripgrep` when available, and stream results to the frontend.
+- **Next improvements:** Add single-match replace, streamed search results for very large workspaces, and optional `ripgrep` acceleration when available.
 
 ### 1.3 Quick Open
 
@@ -644,7 +644,7 @@ This table is the quick checklist for tracking what is already implemented and w
 | ID | Feature | Priority | Status | Notes |
 | --- | --- | --- | --- | --- |
 | 1.1 | Language Server Protocol | P0 | ✅ Done | TypeScript, JavaScript, HTML, CSS and JSON tooling is wired through Monaco/LSP. |
-| 1.2 | Global search and replace | P0 | 🧭 Planned | Needs workspace-wide search UI, filters, previews and replace flow. |
+| 1.2 | Global search and replace | P0 | ✅ Done | Search panel with filters, previews, click-to-open results and replace-all flow. |
 | 1.3 | Quick Open | P0 | ✅ Done | Fuzzy file picker is available through `Ctrl+P`. |
 | 1.4 | Command Palette | P0 | ✅ Done | Command launcher is available through `Ctrl+Shift+P`. |
 | 1.5 | Problems panel | P0 | 🧭 Planned | Needs a dedicated diagnostics panel based on Monaco/LSP markers. |
