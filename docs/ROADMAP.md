@@ -316,11 +316,11 @@ These features make BlinkCode more comfortable for long daily sessions.
 ### 5.3 Settings JSON and UI
 
 - **Priority:** P2
-- **Status:** 🚧 In progress
+- **Status:** ✅ Done
 - **Description:** Support both visual settings and JSON-based configuration.
-- **Current state:** A settings panel exists.
+- **Current state:** Fully implemented. Global settings are stored in `%APPDATA%/BlinkCode/settings.json`, workspace overrides in `<project>/.blinkcode/settings.json`. Settings merge with priority: defaults → global → workspace. The SettingsPanel includes "User JSON" and "Workspace JSON" buttons that open the respective files as editable tabs in Monaco. Auto-save and Ctrl+S apply changes immediately. REST API endpoints expose settings for external tooling.
 - **Why it matters:** Beginners prefer UI controls, while advanced users expect precise JSON configuration.
-- **Next improvements:** Add `settings.json`, workspace overrides and schema validation for settings.
+- **Commit:** `3bc882d` — feat: add JSON-based settings with global/workspace support
 
 ### 5.4 VS Code theme import
 
@@ -672,7 +672,7 @@ This table is the quick checklist for tracking what is already implemented and w
 | 4.4 | AI quick actions | P2 | 🧭 Planned | Needs explain, refactor, fix and test-generation actions. |
 | 5.1 | Snippets | P2 | 🧭 Planned | Needs user-defined and language-specific snippets. |
 | 5.2 | Keybindings editor | P2 | 🧭 Planned | Needs searchable shortcut editor and conflict detection. |
-| 5.3 | Settings JSON and UI | P2 | 🚧 In progress | Settings panel exists; JSON mode and workspace overrides are planned. |
+| 5.3 | Settings JSON and UI | P2 | ✅ Done | Global/workspace JSON settings with merge priority and editable virtual tabs. |
 | 5.4 | VS Code theme import | P2 | 🧭 Planned | Needs theme JSON mapping to Monaco and app CSS variables. |
 | 5.5 | Multi-root workspace | P2 | 🧭 Planned | Needs workspace model with multiple roots. |
 | 5.6 | Zen / Focus mode | P2 | 🧭 Planned | Needs UI visibility toggles and persisted preference. |

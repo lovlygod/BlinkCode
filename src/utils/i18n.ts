@@ -79,6 +79,10 @@ const en: Record<string, string> = {
   'settings.title': 'Settings',
   'settings.general': 'General',
   'settings.keybindings': 'Keybindings',
+  'settings.openJson': 'Open User Settings (JSON)',
+  'settings.openWorkspaceJson': 'Open Workspace Settings (JSON)',
+  'settings.globalJson': 'User JSON',
+  'settings.workspaceJson': 'Workspace JSON',
 
   'settings.editor': 'Editor',
   'settings.editor.desc': 'Configure the code editor appearance and behavior',
@@ -323,6 +327,10 @@ const ru: Record<string, string> = {
   'settings.title': 'Настройки',
   'settings.general': 'Основные',
   'settings.keybindings': 'Горячие клавиши',
+  'settings.openJson': 'Открыть настройки пользователя (JSON)',
+  'settings.openWorkspaceJson': 'Открыть настройки проекта (JSON)',
+  'settings.globalJson': 'JSON пользователя',
+  'settings.workspaceJson': 'JSON проекта',
 
   'settings.editor': 'Редактор',
   'settings.editor.desc': 'Настройте внешний вид и поведение редактора кода',

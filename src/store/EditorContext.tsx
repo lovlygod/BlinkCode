@@ -6,7 +6,8 @@ import {
   fetchTree, fetchFileContent, saveFile, createFileOnServer,
   deleteOnServer, renameOnServer, moveOnServer,
   openFolderOnServer, fetchState, saveStateToServer,
-  getFsWsUrl,
+  getFsWsUrl, fetchSettings, saveSettingsToServer,
+  fetchSettingsRaw, saveSettingsRaw,
 } from '../utils/api';
 import { v4 as uuid } from 'uuid';
 
@@ -276,7 +277,7 @@ function getSaveableState(state: EditorState): SavedEditorState {
         language: t.language || '',
         isBinary: file?.binary || false,
       };
-    }).filter(t => t.serverPath),
+    }).filter(t => t.serverPath && !t.serverPath.startsWith('__settings__/')),
     activeTabServerPath: activeFile?.serverPath || null,
     splitActiveTabServerPath: (() => {
       if (!state.splitActiveTabId) return null;
@@ -534,7 +535,27 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
     case 'UPDATE_SETTINGS': {
       const settings = { ...state.settings, ...action.payload };
       try { localStorage.setItem('blinkcode-settings', JSON.stringify(settings)); } catch {}
+      const { keybindings: _kb, ...settingsWithoutKeybindings } = settings;
+      saveSettingsToServer(settingsWithoutKeybindings).catch(() => {});
       return { ...state, settings };
+    }
+
+    case 'OPEN_VIRTUAL_SETTINGS': {
+      const { node } = action.payload;
+      const existing = state.openTabs.find(t => {
+        const f = findNodeById(state.files, t.fileId);
+        return f?.serverPath === node.serverPath;
+      });
+      if (existing) {
+        return { ...state, activeTabId: existing.id };
+      }
+      const tab: Tab = { id: uuid(), fileId: node.id, name: node.name, language: 'json' };
+      return {
+        ...state,
+        files: [...state.files, node],
+        openTabs: [...state.openTabs, tab],
+        activeTabId: tab.id,
+      };
     }
 
     case 'RESTORE_STATE': {
@@ -715,6 +736,7 @@ interface Ctx {
   openFolderFromServer: (dirPath: string) => Promise<void>;
   toggleSettings: () => void;
   updateSettings: (s: Partial<EditorSettings>) => void;
+  openSettingsJson: (scope?: 'global' | 'workspace') => Promise<void>;
   registerEditor: (editor: any) => void;
   triggerEditorAction: (action: 'undo' | 'redo') => void;
 }
@@ -755,7 +777,21 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const updateFileContent = useCallback((fid: string, c: string) => {
     dispatch({ type: 'UPDATE_FILE_CONTENT', payload: { fileId: fid, content: c } });
     const file = findNodeById(state.files, fid);
-    if (file?.serverPath && isSupportedWebFile(file.name) && state.settings.autoSaveDelay > 0) {
+    if (file?.serverPath?.startsWith('__settings__/') && state.settings.autoSaveDelay > 0) {
+      if (saveTimers.current.has(fid)) clearTimeout(saveTimers.current.get(fid)!);
+      saveTimers.current.set(fid, setTimeout(async () => {
+        try {
+          const scope = file.settingsScope || 'global';
+          await saveSettingsRaw(c, scope);
+          dispatch({ type: 'MARK_FILE_SAVED', payload: { fileId: fid } });
+          try {
+            const parsed = JSON.parse(c);
+            dispatch({ type: 'UPDATE_SETTINGS', payload: parsed });
+          } catch {}
+        } catch {}
+        saveTimers.current.delete(fid);
+      }, state.settings.autoSaveDelay));
+    } else if (file?.serverPath && isSupportedWebFile(file.name) && state.settings.autoSaveDelay > 0) {
       if (saveTimers.current.has(fid)) clearTimeout(saveTimers.current.get(fid)!);
       saveTimers.current.set(fid, setTimeout(async () => {
         try {
@@ -862,8 +898,53 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const toggleSettings = useCallback(() => dispatch({ type: 'TOGGLE_SETTINGS' }), []);
   const updateSettings = useCallback((s: Partial<EditorSettings>) => dispatch({ type: 'UPDATE_SETTINGS', payload: s }), []);
 
+  const openSettingsJson = useCallback(async (scope: 'global' | 'workspace' = 'global') => {
+    try {
+      const { content, path: filePath } = await fetchSettingsRaw(scope);
+      const virtualPath = `__settings__/${scope}/settings.json`;
+      const name = scope === 'workspace' ? 'Workspace Settings' : 'User Settings';
+
+      const existingNode = findNodeByPath(state.files, virtualPath);
+      if (existingNode) {
+        const tab = state.openTabs.find(t => t.fileId === existingNode.id);
+        if (tab) {
+          dispatch({ type: 'SET_FILE_CONTENT', payload: { fileId: existingNode.id, content } });
+          return;
+        }
+      }
+
+      const node: FileNode = {
+        id: uuid(),
+        name,
+        type: 'file',
+        language: 'json',
+        isExpanded: false,
+        content,
+        serverPath: virtualPath,
+        settingsScope: scope,
+        settingsFilePath: filePath,
+      };
+      dispatch({ type: 'OPEN_VIRTUAL_SETTINGS', payload: { node } });
+    } catch (err) {
+      console.error('[openSettingsJson] failed:', err);
+    }
+  }, [state.files, state.openTabs]);
+
   const loadFromServer = useCallback(async () => {
     try {
+      try {
+        const serverSettings = await fetchSettings();
+        if (serverSettings?.merged) {
+          const localRaw = localStorage.getItem('blinkcode-settings');
+          const local = localRaw ? JSON.parse(localRaw) : {};
+          const merged = { ...serverSettings.merged, ...local };
+          if (!local.keybindings) {
+            merged.keybindings = defaultKeybindings;
+          }
+          dispatch({ type: 'UPDATE_SETTINGS', payload: merged });
+        }
+      } catch {}
+
       let saved: SavedEditorState | null = null;
       try {
         saved = await fetchState();
@@ -1072,7 +1153,16 @@ export function EditorProvider({ children }: { children: ReactNode }) {
             const tab = s.openTabs.find(t => t.id === s.activeTabId);
             if (tab) {
               const file = findNodeById(s.files, tab.fileId);
-              if (file?.serverPath && file.content !== undefined && isSupportedWebFile(file.name)) {
+              if (file?.serverPath?.startsWith('__settings__/') && file.content !== undefined) {
+                const scope = file.settingsScope || 'global';
+                saveSettingsRaw(file.content, scope).then(() => {
+                  dispatch({ type: 'MARK_FILE_SAVED', payload: { fileId: file.id } });
+                  try {
+                    const parsed = JSON.parse(file.content!);
+                    dispatch({ type: 'UPDATE_SETTINGS', payload: parsed });
+                  } catch {}
+                }).catch(() => {});
+              } else if (file?.serverPath && file.content !== undefined && isSupportedWebFile(file.name)) {
                 let content = file.content;
                 if (s.settings.trimTrailingWhitespace) {
                   content = content.split('\n').map(line => line.replace(/\s+$/, '')).join('\n');
@@ -1109,7 +1199,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,
-      toggleSettings, updateSettings, registerEditor, triggerEditorAction,
+      toggleSettings, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
     }}>
       {children}
     </EditorContext.Provider>

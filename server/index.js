@@ -11,6 +11,20 @@ import { fileURLToPath } from 'url';
 import { saveState, loadState, saveWorkspacePath, loadWorkspacePath, addRecentProject, loadRecentProjects } from './db.js';
 import { createPtyManager } from './pty.js';
 import { attachLspBridge, parseLspUrl } from './lsp.js';
+import {
+  defaultSettings,
+  loadGlobalSettings,
+  loadWorkspaceSettings,
+  loadMergedSettings,
+  saveGlobalSettings,
+  saveWorkspaceSettingsFile,
+  getGlobalSettingsPath,
+  getWorkspaceSettingsPath,
+  loadGlobalSettingsRaw,
+  saveGlobalSettingsRaw,
+  loadWorkspaceSettingsRaw,
+  saveWorkspaceSettingsRaw,
+} from './settings.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -302,6 +316,66 @@ app.post('/api/move', (req, res) => {
     res.json({ ok: true, newPath: path.relative(workspace, dp).replace(/\\/g, '/') });
   } catch { res.status(500).json({ error: 'Cannot move' }); }
 });
+
+// ---- Settings JSON endpoints ----
+
+app.get('/api/settings', (req, res) => {
+  res.json({
+    defaults: defaultSettings,
+    global: loadGlobalSettings(),
+    workspace: loadWorkspaceSettings(workspace),
+    merged: loadMergedSettings(workspace),
+    globalPath: getGlobalSettingsPath(),
+    workspacePath: getWorkspaceSettingsPath(workspace),
+  });
+});
+
+app.put('/api/settings', (req, res) => {
+  const { scope } = req.query;
+  if (scope === 'workspace') {
+    saveWorkspaceSettingsFile(workspace, req.body);
+  } else {
+    saveGlobalSettings(req.body);
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/settings/raw', (req, res) => {
+  const { scope } = req.query;
+  if (scope === 'workspace') {
+    res.json({
+      content: loadWorkspaceSettingsRaw(workspace),
+      path: getWorkspaceSettingsPath(workspace),
+    });
+  } else {
+    res.json({
+      content: loadGlobalSettingsRaw(),
+      path: getGlobalSettingsPath(),
+    });
+  }
+});
+
+app.put('/api/settings/raw', (req, res) => {
+  const { scope } = req.query;
+  const { content } = req.body;
+  try {
+    JSON.parse(content);
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+  if (scope === 'workspace') {
+    saveWorkspaceSettingsRaw(workspace, content);
+  } else {
+    saveGlobalSettingsRaw(content);
+  }
+  res.json({ ok: true });
+});
+
+app.get('/api/settings/schema', (_req, res) => {
+  res.json(defaultSettings);
+});
+
+// ---- State endpoints ----
 
 app.get('/api/state', (req, res) => {
   res.json(loadState());

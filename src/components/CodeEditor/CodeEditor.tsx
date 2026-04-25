@@ -66,7 +66,8 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const detailedSupport = activeFile
     ? getDetailedFileSupportInfo(activeFile.name, { binary: activeFile.binary, size: activeFile.size })
     : null;
-  const isUnsupportedTextFile = Boolean(activeFile && !activeFile.binary && !supportInfo.supported);
+  const isSettingsJson = Boolean(activeFile?.serverPath?.startsWith('__settings__/'));
+  const isUnsupportedTextFile = Boolean(activeFile && !activeFile.binary && !supportInfo.supported && !isSettingsJson);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showOnboardingDismiss, setShowOnboardingDismiss] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);

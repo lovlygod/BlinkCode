@@ -10,6 +10,8 @@ export interface FileNode {
   binary?: boolean;
   dirty?: boolean;
   size?: number;
+  settingsScope?: 'global' | 'workspace';
+  settingsFilePath?: string;
 }
 
 export interface Tab {
@@ -162,4 +164,5 @@ export type EditorAction =
   | { type: 'FS_REMOVE_NODE'; payload: { serverPath: string } }
   | { type: 'SPLIT_TAB'; payload: { tabId: string } }
   | { type: 'SET_SPLIT_ACTIVE_TAB'; payload: { tabId: string | null } }
-  | { type: 'CLOSE_SPLIT_TAB' };
+  | { type: 'CLOSE_SPLIT_TAB' }
+  | { type: 'OPEN_VIRTUAL_SETTINGS'; payload: { node: FileNode } };

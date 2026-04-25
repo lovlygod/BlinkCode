@@ -421,7 +421,7 @@ export default function Sidebar() {
           </div>
         ) : (
           <>
-            {renderTree(state.files, 0)}
+            {renderTree(state.files.filter(n => !n.serverPath?.startsWith('__settings__/')), 0)}
         {inline && inline.parentId === null && (
           <div className="tree-row inline-row" style={{ paddingLeft: 8 }}>
             <span className="tree-twistie" />

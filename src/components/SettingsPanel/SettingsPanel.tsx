@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useEditor } from '../../store/EditorContext';
 import type { EditorSettings } from '../../types';
 import { THEME_LIST, type ThemeName } from '../../store/EditorContext';
-import { X, Settings, Keyboard, RotateCcw, ChevronDown } from 'lucide-react';
+import { X, Settings, Keyboard, RotateCcw, ChevronDown, FileJson } from 'lucide-react';
 import { useT } from '../../hooks/useT';
 import ColorPicker from '../common/ColorPicker';
 import './SettingsPanel.css';
@@ -49,7 +49,7 @@ function SettingsSelect({ options, value, onChange }: { options: SelectOption[];
 }
 
 export default function SettingsPanel() {
-  const { state, toggleSettings, updateSettings } = useEditor();
+  const { state, toggleSettings, updateSettings, openSettingsJson } = useEditor();
   const tt = useT();
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<Tab>('general');
@@ -134,7 +134,25 @@ export default function SettingsPanel() {
             <Settings size={15} className="settings-icon" />
             <span className="settings-title">{tt('settings.title')}</span>
           </div>
-          <button className="settings-close" onClick={toggleSettings}><X size={15} /></button>
+          <div className="settings-head-actions">
+            <button
+              className="settings-json-btn"
+              title={tt('settings.openJson')}
+              onClick={() => { openSettingsJson('global'); toggleSettings(); }}
+            >
+              <FileJson size={14} />
+              <span>{tt('settings.globalJson')}</span>
+            </button>
+            <button
+              className="settings-json-btn"
+              title={tt('settings.openWorkspaceJson')}
+              onClick={() => { openSettingsJson('workspace'); toggleSettings(); }}
+            >
+              <FileJson size={14} />
+              <span>{tt('settings.workspaceJson')}</span>
+            </button>
+            <button className="settings-close" onClick={toggleSettings}><X size={15} /></button>
+          </div>
         </div>
 
         <div className="settings-content">

@@ -1,4 +1,4 @@
-import type { FileNode, SavedEditorState } from '../types';
+import type { FileNode, SavedEditorState, EditorSettings } from '../types';
 import { getLanguageFromFileName } from './fileIcons';
 import { v4 as uuid } from 'uuid';
 
@@ -176,4 +176,45 @@ export async function closeWorkspace(): Promise<void> {
 export async function fetchRecentProjects(): Promise<Array<{ path: string; name: string }>> {
   const data = await request(`${API}/recent-projects`);
   return Array.isArray(data.projects) ? data.projects : [];
+}
+
+export interface SettingsResponse {
+  defaults: EditorSettings;
+  global: Partial<EditorSettings>;
+  workspace: Partial<EditorSettings>;
+  merged: EditorSettings;
+  globalPath: string;
+  workspacePath: string | null;
+}
+
+export async function fetchSettings(): Promise<SettingsResponse> {
+  return request(`${API}/settings`);
+}
+
+export async function saveSettingsToServer(
+  settings: Partial<EditorSettings>,
+  scope: 'global' | 'workspace' = 'global',
+): Promise<void> {
+  await request(`${API}/settings?scope=${scope}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings),
+  });
+}
+
+export async function fetchSettingsRaw(
+  scope: 'global' | 'workspace' = 'global',
+): Promise<{ content: string; path: string }> {
+  return request(`${API}/settings/raw?scope=${scope}`);
+}
+
+export async function saveSettingsRaw(
+  content: string,
+  scope: 'global' | 'workspace' = 'global',
+): Promise<void> {
+  await request(`${API}/settings/raw?scope=${scope}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content }),
+  });
 }
