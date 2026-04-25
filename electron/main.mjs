@@ -1,7 +1,9 @@
 import electron from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { startBlinkCodeServer } from '../server/index.js';
+// Server is imported dynamically — in dev mode it runs as a separate
+// system-Node process so Electron must NOT load the native better-sqlite3
+// module (different ABI). In packaged mode we start it in-process.
 
 const { app, BrowserWindow, dialog, ipcMain, Menu, shell } = electron;
 
@@ -94,7 +96,11 @@ async function createWindow() {
   const port = process.env.PORT || (app.isPackaged ? '3210' : '3001');
   const url = `http://127.0.0.1:${port}`;
 
-  await startBlinkCodeServer(port);
+  if (app.isPackaged) {
+    const { startBlinkCodeServer } = await import('../server/index.js');
+    await startBlinkCodeServer(port);
+  }
+
   await waitForServer(url);
 
   mainWindow = new BrowserWindow({

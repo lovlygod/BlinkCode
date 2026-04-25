@@ -31,7 +31,7 @@
     "copyright": "Copyright © BlinkCode",
     "icon": "build/icon.ico",
     "executableName": "BlinkCode",
-    "npmRebuild": false,
+    "npmRebuild": true,
     "nodeGypRebuild": false,
     "directories": {
       "output": "release",
@@ -51,6 +51,7 @@
     ],
     "asarUnpack": [
       "node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
+      "node_modules/better-sqlite3/**/*",
       "node_modules/**/*.node",
       "node_modules/typescript-language-server/**/*",
       "node_modules/typescript/**/*",
