@@ -73,6 +73,7 @@ all keybindings in [`docs/EN/shortcuts.md`](./docs/EN/shortcuts.md).
 - **Real IntelliSense via LSP** — TypeScript / JavaScript / TSX / JSX, HTML,
   CSS / SCSS / LESS, JSON, with auto-import, rename, references, go to definition,
   formatting, code actions and inline diagnostics
+- **Problems panel** — workspace diagnostics grouped by file with filters and click-to-navigate from the status bar
 - **Command Palette** (`Ctrl+Shift+P`) and **Quick Open** (`Ctrl+P`)
 - **Embedded terminal** based on `xterm` with real PTY sessions
 - **Embedded browser preview** for local dev servers and terminal links

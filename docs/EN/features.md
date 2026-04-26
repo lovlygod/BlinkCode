@@ -66,6 +66,7 @@ Real language servers are bridged into Monaco over WebSocket. Deep-dive in
 - Format document (`Shift+Alt+F`) and format selection (`Ctrl+K Ctrl+F`)
 - Code actions / quick fixes (`Ctrl+.`) — add missing import, organize imports, etc.
 - Inline diagnostics (errors, warnings, hints)
+- Problems panel with workspace-wide diagnostics grouped by file, severity badges, All / Errors / Warnings filters, and click-to-navigate to the exact location
 - Monaco's bundled TS / JS / HTML / CSS / JSON services are disabled, so the real LSP is the single source of truth
 
 Implementation files:
@@ -80,8 +81,13 @@ Implementation files:
 - **Quick Open** fuzzy file picker (`Ctrl+P`) — [`QuickOpen`](../../src/components/QuickOpen/QuickOpen.tsx)
 - Go to line (`Ctrl+G`) via Monaco
 - Multi-cursor and column selection via Monaco
-- Status bar — [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx)
+- Status bar — [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx) — cursor position, indentation mode, encoding, language, Git branch, and live error / warning counts with a Problems panel toggle
 - Toast notifications — [`Toast`](../../src/components/Toast/Toast.tsx)
+
+Problems UI implementation:
+- [`ProblemsPanel`](../../src/components/ProblemsPanel/ProblemsPanel.tsx)
+- [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx)
+- [`EditorContext`](../../src/store/EditorContext.tsx)
 
 ## Terminal
 

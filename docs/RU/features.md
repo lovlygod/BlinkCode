@@ -66,6 +66,7 @@
 - Форматирование документа (`Shift+Alt+F`) и выделения (`Ctrl+K Ctrl+F`)
 - Code actions / quick fix (`Ctrl+.`) — add missing import, organize imports и т.д.
 - Inline-диагностика (ошибки, предупреждения, подсказки)
+- Панель Problems с диагностикой по всему workspace: группировка по файлам, severity-badges, фильтры All / Errors / Warnings и переход к точной строке по клику
 - Встроенные Monaco-сервисы для TS / JS / HTML / CSS / JSON отключены — единственный источник правды это реальный LSP
 
 Файлы реализации:
@@ -80,8 +81,13 @@
 - **Quick Open** — нечёткий поиск файлов (`Ctrl+P`) — [`QuickOpen`](../../src/components/QuickOpen/QuickOpen.tsx)
 - Go to line (`Ctrl+G`) через Monaco
 - Мульти-курсор и column-selection через Monaco
-- Статус-бар — [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx)
+- Статус-бар — [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx) — позиция курсора, тип отступов, кодировка, язык, Git-ветка и live-счётчики ошибок / предупреждений с кнопкой открытия Problems panel
 - Тост-уведомления — [`Toast`](../../src/components/Toast/Toast.tsx)
+
+Реализация UI для проблем:
+- [`ProblemsPanel`](../../src/components/ProblemsPanel/ProblemsPanel.tsx)
+- [`StatusBar`](../../src/components/StatusBar/StatusBar.tsx)
+- [`EditorContext`](../../src/store/EditorContext.tsx)
 
 ## Терминал
 

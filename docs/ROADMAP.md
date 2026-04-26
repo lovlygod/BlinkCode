@@ -67,11 +67,11 @@ These features define BlinkCode as an actual IDE rather than a simple text edito
 ### 1.5 Problems panel
 
 - **Priority:** P0
-- **Status:** 🧭 Planned
+- **Status:** ✅ Done
 - **Description:** Show all diagnostics from the current workspace in one panel.
+- **Current state:** Reads Monaco/LSP markers every 2 seconds, groups by file, shows errors/warnings/info with severity icons. Filter by All/Errors/Warnings. Click to navigate to exact line. Error and warning counts shown in StatusBar with toggle button.
 - **Why it matters:** Inline diagnostics are useful, but large projects need a dedicated list of errors and warnings.
-- **Expected behavior:** Users should be able to filter by severity, click a problem to jump to the file and line, and refresh diagnostics automatically.
-- **Implementation direction:** Collect Monaco/LSP markers and render them in a bottom panel.
+- **Next improvements:** Add resizable panel height, keyboard navigation, and problem quick-fix integration.
 
 ### 1.6 File watcher
 
@@ -647,7 +647,7 @@ This table is the quick checklist for tracking what is already implemented and w
 | 1.2 | Global search and replace | P0 | ✅ Done | Search panel with filters, previews, click-to-open results and replace-all flow. |
 | 1.3 | Quick Open | P0 | ✅ Done | Fuzzy file picker is available through `Ctrl+P`. |
 | 1.4 | Command Palette | P0 | ✅ Done | Command launcher is available through `Ctrl+Shift+P`. |
-| 1.5 | Problems panel | P0 | 🧭 Planned | Needs a dedicated diagnostics panel based on Monaco/LSP markers. |
+| 1.5 | Problems panel | P0 | ✅ Done | Diagnostics panel with severity filter, click-to-navigate and StatusBar counts. |
 | 1.6 | File watcher | P0 | ✅ Done | Workspace changes are watched through the backend and pushed to the UI. |
 | 1.7 | Split editor and tab workflow | P0 | ✅ Done | Split mode and tab management are implemented. |
 | 1.8 | SQLite persistence | P0 | ✅ Done | `better-sqlite3` stores editor state, settings, recent projects and histories. |
