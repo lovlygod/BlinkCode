@@ -123,6 +123,7 @@ const initialState: EditorState = {
   showAIPanel: false,
   showSettings: false,
   showSearchPanel: false,
+  showProblemsPanel: false,
   sidebarWidth: 250,
   sidebarVisible: true,
   toasts: [],
@@ -534,6 +535,7 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
 
     case 'TOGGLE_SETTINGS': return { ...state, showSettings: !state.showSettings };
     case 'TOGGLE_SEARCH_PANEL': return { ...state, showSearchPanel: !state.showSearchPanel, sidebarVisible: true };
+    case 'TOGGLE_PROBLEMS_PANEL': return { ...state, showProblemsPanel: !state.showProblemsPanel };
 
     case 'UPDATE_SETTINGS': {
       const settings = { ...state.settings, ...action.payload };
@@ -739,6 +741,7 @@ interface Ctx {
   openFolderFromServer: (dirPath: string) => Promise<void>;
   toggleSettings: () => void;
   toggleSearchPanel: () => void;
+  toggleProblemsPanel: () => void;
   updateSettings: (s: Partial<EditorSettings>) => void;
   openSettingsJson: (scope?: 'global' | 'workspace') => Promise<void>;
   registerEditor: (editor: any) => void;
@@ -901,6 +904,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const collapseAll = useCallback(() => dispatch({ type: 'COLLAPSE_ALL' }), []);
   const toggleSettings = useCallback(() => dispatch({ type: 'TOGGLE_SETTINGS' }), []);
   const toggleSearchPanel = useCallback(() => dispatch({ type: 'TOGGLE_SEARCH_PANEL' }), []);
+  const toggleProblemsPanel = useCallback(() => dispatch({ type: 'TOGGLE_PROBLEMS_PANEL' }), []);
   const updateSettings = useCallback((s: Partial<EditorSettings>) => dispatch({ type: 'UPDATE_SETTINGS', payload: s }), []);
 
   const openSettingsJson = useCallback(async (scope: 'global' | 'workspace' = 'global') => {
@@ -1205,7 +1209,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,
-      toggleSettings, toggleSearchPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
+      toggleSettings, toggleSearchPanel, toggleProblemsPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
     }}>
       {children}
     </EditorContext.Provider>

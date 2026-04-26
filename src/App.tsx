@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import SearchPanel from './components/SearchPanel/SearchPanel';
 import CodeEditor from './components/CodeEditor/CodeEditor';
 import TerminalPanel from './components/Terminal/Terminal';
+import ProblemsPanel from './components/ProblemsPanel/ProblemsPanel';
 import AIPanel from './components/AIPanel/AIPanel';
 import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import Toast from './components/Toast/Toast';
@@ -53,6 +54,7 @@ function EditorLayout() {
             )}
           </div>
           <TerminalPanel />
+          <ProblemsPanel />
           <StatusBar />
         </div>
         <AIPanel />

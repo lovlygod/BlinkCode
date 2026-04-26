@@ -89,6 +89,7 @@ export interface EditorState {
   showAIPanel: boolean;
   showSettings: boolean;
   showSearchPanel: boolean;
+  showProblemsPanel: boolean;
   sidebarWidth: number;
   sidebarVisible: boolean;
   toasts: ToastItem[];
@@ -160,6 +161,7 @@ export type EditorAction =
   | { type: 'RESTORE_STATE'; payload: SavedEditorState }
   | { type: 'TOGGLE_SETTINGS' }
   | { type: 'TOGGLE_SEARCH_PANEL' }
+  | { type: 'TOGGLE_PROBLEMS_PANEL' }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<EditorSettings> }
   | { type: 'SET_WORKSPACE_DIR'; payload: string }
   | { type: 'FS_ADD_NODE'; payload: { serverPath: string; name: string; type: 'file' | 'folder' } }

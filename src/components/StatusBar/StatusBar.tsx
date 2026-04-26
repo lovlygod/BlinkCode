@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useEditor } from '../../store/EditorContext';
-import { GitBranch } from 'lucide-react';
+import { AlertTriangle, CircleAlert, GitBranch } from 'lucide-react';
 import './StatusBar.css';
 
 export default function StatusBar() {
-  const { state, getActiveFile } = useEditor();
+  const { state, getActiveFile, toggleProblemsPanel } = useEditor();
   const [cursor, setCursor] = useState({ line: 1, column: 1 });
   const [branch, setBranch] = useState<string | null>(null);
+  const [problemCounts, setProblemCounts] = useState({ errors: 0, warnings: 0 });
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -15,6 +16,15 @@ export default function StatusBar() {
     };
     window.addEventListener('blinkcode:cursorPosition', handler);
     return () => window.removeEventListener('blinkcode:cursorPosition', handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const d = (e as CustomEvent).detail;
+      if (d) setProblemCounts({ errors: d.errors || 0, warnings: d.warnings || 0 });
+    };
+    window.addEventListener('blinkcode:problemCounts', handler);
+    return () => window.removeEventListener('blinkcode:problemCounts', handler);
   }, []);
 
   useEffect(() => {
@@ -48,6 +58,10 @@ export default function StatusBar() {
             {branch}
           </span>
         )}
+        <button className="status-item status-problems-btn" onClick={toggleProblemsPanel} title="Toggle Problems">
+          <CircleAlert size={12} /> {problemCounts.errors}
+          <AlertTriangle size={12} /> {problemCounts.warnings}
+        </button>
       </div>
       <div className="status-bar-right">
         <span className="status-item">Ln {cursor.line}, Col {cursor.column}</span>

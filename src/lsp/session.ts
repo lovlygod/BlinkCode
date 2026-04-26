@@ -133,6 +133,15 @@ function modelToFileUri(model: MonacoModel, workspacePath: string): string {
   return 'file://' + encodeURI(full);
 }
 
+function getLspLanguageForModel(model: MonacoModel, monacoLang: string): string {
+  try {
+    const path = String(model?.uri?.path || '').toLowerCase();
+    if (path.endsWith('.tsx')) return 'typescriptreact';
+    if (path.endsWith('.jsx')) return 'javascriptreact';
+  } catch {}
+  return MONACO_LANG_TO_LSP_LANG[monacoLang] || monacoLang;
+}
+
 function getSession(monaco: Monaco, workspacePath: string, serverKey: ServerKey): LspSession {
   const key = `${workspacePath}::${serverKey}`;
   const hit = cache.get(key);
@@ -159,7 +168,7 @@ export function attachLspToEditor(monaco: Monaco, editor: any, workspacePath: st
     const serverKey = MONACO_LANG_TO_SERVER_KEY[lang];
     if (!serverKey) return;
     if (!workspacePath) return;
-    const lspLang = MONACO_LANG_TO_LSP_LANG[lang] || lang;
+    const lspLang = getLspLanguageForModel(model, lang);
     const session = getSession(monaco, workspacePath, serverKey);
     const uri = modelToFileUri(model, workspacePath);
     wiredModels.add(model);
@@ -183,6 +192,7 @@ export function attachLspToEditor(monaco: Monaco, editor: any, workspacePath: st
   if (m) hook(m);
 
   editor.onDidChangeModel?.((e: any) => {
+    if (!e?.newModelUrl) return;
     const next = monaco.editor.getModel(e.newModelUrl);
     if (next) hook(next);
   });

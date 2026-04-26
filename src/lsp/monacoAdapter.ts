@@ -193,7 +193,6 @@ export function createLspSession(monaco: Monaco, cfg: LspSessionConfig): LspSess
         } catch {}
       }
     }
-    if (!model) return;
     const markers = (params.diagnostics || []).map((d: any) => {
       const marker: any = {
         severity: lspSeverityToMarker(d.severity, monaco),
@@ -218,6 +217,10 @@ export function createLspSession(monaco: Monaco, cfg: LspSessionConfig): LspSess
       }
       return marker;
     });
+    window.dispatchEvent(new CustomEvent('blinkcode:lspDiagnostics', {
+      detail: { uri: params.uri, diagnostics: markers },
+    }));
+    if (!model) return;
     monaco.editor.setModelMarkers(model, 'lsp', markers);
   });
   disposables.push(offDiag);

@@ -168,6 +168,10 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
 
   useEffect(() => {
     if (editorRef.current && monacoRef.current) {
+      const model = editorRef.current.getModel?.();
+      if (model && activeFile?.name) {
+        monacoRef.current.editor.setModelLanguage(model, getMonacoLanguage(activeFile.name));
+      }
       const s = state.settings;
       editorRef.current.updateOptions({
         fontSize: s.fontSize,
@@ -194,6 +198,11 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const handleMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
+    (window as any).monaco = monaco;
+    const mountedModel = editor.getModel?.();
+    if (mountedModel && activeFile?.name) {
+      monaco.editor.setModelLanguage(mountedModel, getMonacoLanguage(activeFile.name));
+    }
     if (group === 'primary') registerEditor(editor);
 
     defineBlinkTheme(monaco, 'blinkcode-dark', {
@@ -1063,7 +1072,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
     });
 
     try { attachLspToEditor(monaco, editor, state.workspaceDir || ''); } catch {}
-  }, [state.workspaceDir]);
+  }, [activeFile?.name, state.workspaceDir]);
 
   if (!activeFile) {
     return (
@@ -1239,7 +1248,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
       )}
       <Editor
         height="100%"
-        language={activeFile.language || getMonacoLanguage(activeFile.name)}
+        language={getMonacoLanguage(activeFile.name) || activeFile.language}
         path={activeFile.serverPath || activeFile.id}
         value={activeFile.content || ''}
         onChange={handleChange}
