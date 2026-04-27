@@ -420,15 +420,16 @@
 .sidebar-resizer {
   position: absolute;
   top: 0;
-  right: -3px;
-  width: 6px;
+  right: -2px;
+  width: 5px;
   height: 100%;
   cursor: col-resize;
-  z-index: 10;
+  z-index: 50;
 }
 
 .sidebar-resizer:hover {
-  background: var(--accent-strong);
+  background: var(--accent);
+  opacity: 0.6;
 }
 
 .ctx-menu {

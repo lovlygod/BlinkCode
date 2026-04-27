@@ -4,6 +4,7 @@ import { useEditor } from '../../store/EditorContext';
 import type { FileNode } from '../../types';
 import { replaceWorkspace, searchWorkspace, type WorkspaceSearchFileResult } from '../../utils/api';
 import { useT } from '../../hooks/useT';
+import { useHorizontalResize } from '../../hooks/useHorizontalResize';
 import './SearchPanel.css';
 
 function findNodeByPath(nodes: FileNode[], serverPath: string): FileNode | null {
@@ -28,8 +29,9 @@ function highlightedPreview(preview: string, column: number, length: number): st
 }
 
 export default function SearchPanel() {
-  const { state, openFile, toggleSearchPanel, addToast, loadFromServer } = useEditor();
+  const { state, openFile, toggleSearchPanel, addToast, loadFromServer, setSidebarWidth } = useEditor();
   const tt = useT();
+  const resizerRef = useHorizontalResize(state.sidebarWidth, setSidebarWidth);
   const [query, setQuery] = useState('');
   const [replacement, setReplacement] = useState('');
   const [include, setInclude] = useState('');
@@ -117,7 +119,7 @@ export default function SearchPanel() {
   if (!state.showSearchPanel) return null;
 
   return (
-    <aside className="search-panel">
+    <aside className="search-panel" style={{ width: state.sidebarWidth }}>
       <div className="search-panel-head">
         <div className="search-panel-title"><Search size={14} /> {tt('search.title')}</div>
         <button className="search-panel-close" onClick={toggleSearchPanel} title={tt('common.close')}><X size={14} /></button>
@@ -182,6 +184,7 @@ export default function SearchPanel() {
           );
         })}
       </div>
+      <div className="search-panel-resizer" ref={resizerRef} />
     </aside>
   );
 }

@@ -1,12 +1,15 @@
 .search-panel {
   width: 330px;
-  min-width: 330px;
+  min-width: 180px;
+  max-width: 420px;
+  flex-shrink: 0;
   height: 100%;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   color: var(--text-primary);
+  position: relative;
 }
 
 .search-panel-head {
@@ -194,4 +197,19 @@
   color: var(--text-primary);
   border-radius: 2px;
   padding: 0 1px;
+}
+
+.search-panel-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 50;
+}
+
+.search-panel-resizer:hover {
+  background: var(--accent);
+  opacity: 0.6;
 }
