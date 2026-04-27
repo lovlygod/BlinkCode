@@ -68,6 +68,7 @@ export interface EditorSettings {
   showFileIcons: boolean;
   compactMode: boolean;
   dotGridColor: string;
+  backgroundStyle: 'dotgrid' | 'solid';
   keybindings: Keybinding[];
   language: 'en' | 'ru';
   colorScheme: 'dark' | 'light' | 'system';

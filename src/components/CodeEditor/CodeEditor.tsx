@@ -1074,11 +1074,35 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
     try { attachLspToEditor(monaco, editor, state.workspaceDir || ''); } catch {}
   }, [activeFile?.name, state.workspaceDir]);
 
+  const isSolid = state.settings.backgroundStyle === 'solid';
+
+  const mainShortcuts = [
+    { keys: 'Ctrl+S', label: tt('kb.save') },
+    { keys: 'Ctrl+Shift+P', label: tt('kb.commandPalette') },
+    { keys: 'Ctrl+P', label: tt('kb.quickOpen') },
+    { keys: 'Ctrl+Shift+F', label: tt('kb.workspaceSearch') },
+    { keys: 'Ctrl+W', label: tt('kb.closeTab') },
+    { keys: 'Ctrl+`', label: tt('kb.toggleTerminal') },
+  ];
+
   if (!activeFile) {
     return (
-      <div className="editor-empty">
-        <DotGrid color={state.settings.dotGridColor} />
-        {!showOnboarding && (
+      <div className={`editor-empty${isSolid ? ' editor-empty-solid' : ''}`}>
+        {isSolid ? (
+          <div className="shortcuts-overlay">
+            <div className="shortcuts-grid">
+              {mainShortcuts.map(s => (
+                <div key={s.keys} className="shortcut-item">
+                  <kbd className="shortcut-keys">{s.keys}</kbd>
+                  <span className="shortcut-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <DotGrid color={state.settings.dotGridColor} />
+        )}
+        {!isSolid && !showOnboarding && (
           <div className="empty-inner">
             <div className="empty-icon">
               <BlinkLogo className="empty-logo" />

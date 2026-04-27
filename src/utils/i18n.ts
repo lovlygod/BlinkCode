@@ -150,6 +150,10 @@ const en: Record<string, string> = {
   'settings.compactMode.desc': 'Reduce spacing for denser UI',
   'settings.dotGridColor': 'Dot Grid Color',
   'settings.dotGridColor.desc': 'Color of the interactive dot grid on the welcome screen',
+  'settings.backgroundStyle': 'Background Style',
+  'settings.backgroundStyle.desc': 'Choose the background style for the empty editor area',
+  'backgroundStyle.dotgrid': 'Dot Grid',
+  'backgroundStyle.solid': 'Solid',
 
   'cursorStyle.line': 'Line',
   'cursorStyle.block': 'Block',
@@ -229,6 +233,13 @@ const en: Record<string, string> = {
   'kb.goToLine': 'Go to Line',
   'kb.toggleWordWrap': 'Toggle Word Wrap',
   'kb.comment': 'Toggle Comment',
+
+  'kb.workspaceSearch': 'Search in Workspace',
+  'kb.sourceControl': 'Source Control',
+  'kb.problemsPanel': 'Problems Panel',
+  'kb.saveAll': 'Save All',
+  'kb.closeAllTabs': 'Close All Tabs',
+  'kb.formatDocument': 'Format Document',
 
   'on': 'On',
   'settings.off': 'Off',
@@ -442,6 +453,10 @@ const ru: Record<string, string> = {
   'settings.compactMode.desc': 'Уменьшить отступы для плотного интерфейса',
   'settings.dotGridColor': 'Цвет точек',
   'settings.dotGridColor.desc': 'Цвет интерактивной сетки точек на экране приветствия',
+  'settings.backgroundStyle': 'Стиль фона',
+  'settings.backgroundStyle.desc': 'Выберите стиль фона для пустой области редактора',
+  'backgroundStyle.dotgrid': 'Сетка точек',
+  'backgroundStyle.solid': 'Сплошной',
 
   'cursorStyle.line': 'Линия',
   'cursorStyle.block': 'Блок',
@@ -522,6 +537,13 @@ const ru: Record<string, string> = {
   'kb.goToLine': 'Перейти к строке',
   'kb.toggleWordWrap': 'Перенос строк',
   'kb.comment': 'Комментарий',
+
+  'kb.workspaceSearch': 'Поиск в проекте',
+  'kb.sourceControl': 'Контроль версий',
+  'kb.problemsPanel': 'Панель проблем',
+  'kb.saveAll': 'Сохранить все',
+  'kb.closeAllTabs': 'Закрыть все вкладки',
+  'kb.formatDocument': 'Форматировать документ',
 
   'on': 'Вкл',
   'off': 'Выкл',

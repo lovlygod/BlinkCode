@@ -105,14 +105,19 @@ export default function SettingsPanel() {
     const defaultBinds = [
       { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
       { id: 'quickOpen', label: 'Quick Open', keys: 'Ctrl+P' },
+      { id: 'workspaceSearch', label: 'Search in Workspace', keys: 'Ctrl+Shift+F' },
+      { id: 'sourceControl', label: 'Source Control', keys: 'Ctrl+Shift+G' },
+      { id: 'problemsPanel', label: 'Problems Panel', keys: 'Ctrl+Shift+M' },
       { id: 'splitEditor', label: 'Split Editor Right', keys: 'Ctrl+\\' },
       { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
+      { id: 'saveAll', label: 'Save All', keys: 'Ctrl+Shift+S' },
       { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
       { id: 'toggleTerminal', label: 'Toggle Terminal', keys: 'Ctrl+`' },
       { id: 'toggleAI', label: 'Toggle AI Panel', keys: 'Ctrl+I' },
       { id: 'toggleSettings', label: 'Toggle Settings', keys: 'Ctrl+,' },
-      { id: 'newFile', label: 'New File', keys: 'Alt+N' },
-      { id: 'closeTab', label: 'Close Tab', keys: 'Alt+W' },
+      { id: 'newFile', label: 'New File', keys: 'Ctrl+N' },
+      { id: 'closeTab', label: 'Close Tab', keys: 'Ctrl+W' },
+      { id: 'closeAllTabs', label: 'Close All Tabs', keys: 'Ctrl+K Ctrl+W' },
       { id: 'zoomIn', label: 'Zoom In', keys: 'Ctrl+=' },
       { id: 'zoomOut', label: 'Zoom Out', keys: 'Ctrl+-' },
       { id: 'find', label: 'Find', keys: 'Ctrl+F' },
@@ -122,6 +127,7 @@ export default function SettingsPanel() {
       { id: 'goToLine', label: 'Go to Line', keys: 'Ctrl+G' },
       { id: 'toggleWordWrap', label: 'Toggle Word Wrap', keys: 'Alt+Z' },
       { id: 'comment', label: 'Toggle Comment', keys: 'Ctrl+/' },
+      { id: 'formatDocument', label: 'Format Document', keys: 'Shift+Alt+F' },
     ];
     updateSettings({ keybindings: defaultBinds });
   };
@@ -531,6 +537,26 @@ export default function SettingsPanel() {
                         <span className="toggle-track"><span className="toggle-thumb" /></span>
                         <span className="toggle-label">{s.compactMode ? tt('on') : tt('off')}</span>
                       </button>
+                    </div>
+                  </div>
+                  <hr className="settings-divider" />
+
+                  <div className="settings-row">
+                    <div className="settings-row-label">
+                      <div>
+                        <div className="settings-row-name">{tt('settings.backgroundStyle')}</div>
+                        <div className="settings-row-desc">{tt('settings.backgroundStyle.desc')}</div>
+                      </div>
+                    </div>
+                    <div className="settings-row-control">
+                      <SettingsSelect
+                        options={[
+                          { value: 'dotgrid', label: tt('backgroundStyle.dotgrid') },
+                          { value: 'solid', label: tt('backgroundStyle.solid') },
+                        ]}
+                        value={s.backgroundStyle}
+                        onChange={v => updateSettings({ backgroundStyle: v as 'dotgrid' | 'solid' })}
+                      />
                     </div>
                   </div>
                   <hr className="settings-divider" />

@@ -15,14 +15,18 @@ const defaultKeybindings: Keybinding[] = [
   { id: 'commandPalette', label: 'Command Palette', keys: 'Ctrl+Shift+P' },
   { id: 'quickOpen', label: 'Quick Open', keys: 'Ctrl+P' },
   { id: 'workspaceSearch', label: 'Search in Workspace', keys: 'Ctrl+Shift+F' },
+  { id: 'sourceControl', label: 'Source Control', keys: 'Ctrl+Shift+G' },
+  { id: 'problemsPanel', label: 'Problems Panel', keys: 'Ctrl+Shift+M' },
   { id: 'splitEditor', label: 'Split Editor Right', keys: 'Ctrl+\\' },
   { id: 'save', label: 'Save File', keys: 'Ctrl+S' },
+  { id: 'saveAll', label: 'Save All', keys: 'Ctrl+Shift+S' },
   { id: 'toggleSidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B' },
   { id: 'toggleTerminal', label: 'Toggle Terminal', keys: 'Ctrl+`' },
   { id: 'toggleAI', label: 'Toggle AI Panel', keys: 'Ctrl+I' },
   { id: 'toggleSettings', label: 'Toggle Settings', keys: 'Ctrl+,' },
-  { id: 'newFile', label: 'New File', keys: 'Alt+N' },
-  { id: 'closeTab', label: 'Close Tab', keys: 'Alt+W' },
+  { id: 'newFile', label: 'New File', keys: 'Ctrl+N' },
+  { id: 'closeTab', label: 'Close Tab', keys: 'Ctrl+W' },
+  { id: 'closeAllTabs', label: 'Close All Tabs', keys: 'Ctrl+K Ctrl+W' },
   { id: 'zoomIn', label: 'Zoom In', keys: 'Ctrl+=' },
   { id: 'zoomOut', label: 'Zoom Out', keys: 'Ctrl+-' },
   { id: 'find', label: 'Find', keys: 'Ctrl+F' },
@@ -32,6 +36,7 @@ const defaultKeybindings: Keybinding[] = [
   { id: 'goToLine', label: 'Go to Line', keys: 'Ctrl+G' },
   { id: 'toggleWordWrap', label: 'Toggle Word Wrap', keys: 'Alt+Z' },
   { id: 'comment', label: 'Toggle Comment', keys: 'Ctrl+/' },
+  { id: 'formatDocument', label: 'Format Document', keys: 'Shift+Alt+F' },
 ];
 
 const defaultSettings: EditorSettings = {
@@ -55,6 +60,7 @@ const defaultSettings: EditorSettings = {
   showFileIcons: true,
   compactMode: false,
   dotGridColor: '#4f8cff',
+  backgroundStyle: 'dotgrid',
   keybindings: defaultKeybindings,
   language: 'en',
   colorScheme: 'dark',
@@ -1178,6 +1184,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           case 'commandPalette': window.dispatchEvent(new CustomEvent('blinkcode:toggleCommandPalette')); break;
           case 'quickOpen': window.dispatchEvent(new CustomEvent('blinkcode:openQuickOpen', { detail: { openQuickOpen: true } })); break;
           case 'workspaceSearch': dispatch({ type: 'TOGGLE_SEARCH_PANEL' }); break;
+          case 'sourceControl': dispatch({ type: 'TOGGLE_SOURCE_CONTROL' }); break;
+          case 'problemsPanel': dispatch({ type: 'TOGGLE_PROBLEMS_PANEL' }); break;
           case 'splitEditor': {
             const tab = s.openTabs.find(t => t.id === s.activeTabId);
             if (tab && !s.splitActiveTabId) dispatch({ type: 'SPLIT_TAB', payload: { tabId: tab.id } });
@@ -1192,6 +1200,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           case 'zoomIn': dispatch({ type: 'UPDATE_SETTINGS', payload: { fontSize: Math.min(30, s.settings.fontSize + 1) } }); break;
           case 'zoomOut': dispatch({ type: 'UPDATE_SETTINGS', payload: { fontSize: Math.max(8, s.settings.fontSize - 1) } }); break;
           case 'closeTab': { if (s.activeTabId) dispatch({ type: 'CLOSE_TAB', payload: { tabId: s.activeTabId } }); break; }
+          case 'closeAllTabs': { s.openTabs.forEach(t => dispatch({ type: 'CLOSE_TAB', payload: { tabId: t.id } })); break; }
+          case 'saveAll': {
+            s.openTabs.forEach(tab => {
+              const file = findNodeById(s.files, tab.fileId);
+              if (file?.serverPath && file.content !== undefined && isSupportedWebFile(file.name)) {
+                saveFile(file.serverPath, file.content).then(() => {
+                  dispatch({ type: 'MARK_FILE_SAVED', payload: { fileId: file.id } });
+                }).catch(() => {});
+              }
+            });
+            break;
+          }
           case 'newFile': {
             dispatch({ type: 'SHOW_NEW_FILE', payload: { type: 'file' } });
             if (!s.sidebarVisible) dispatch({ type: 'TOGGLE_SIDEBAR' });
@@ -1227,6 +1247,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
           }
           case 'undo': editorRef.current?.focus(); editorRef.current?.trigger('keyboard', 'undo'); break;
           case 'redo': editorRef.current?.focus(); editorRef.current?.trigger('keyboard', 'redo'); break;
+          case 'formatDocument': editorRef.current?.focus(); editorRef.current?.trigger('keyboard', 'editor.action.formatDocument'); break;
           default: break;
         }
         return;
