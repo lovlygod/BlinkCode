@@ -140,15 +140,10 @@ export default function TabsHeader() {
     setMenu(null);
   };
 
-  const handleTabClick = (tabId: string, isActive: boolean, target: HTMLDivElement) => {
-    if (isActive) {
-      const rect = target.getBoundingClientRect();
-      setMenu(current => current?.tabId === tabId ? null : { tabId, rect });
-      return;
-    }
-
-    setMenu(null);
-    setActiveTab(tabId);
+  const handleTabContextMenu = (e: React.MouseEvent, tabId: string, target: HTMLDivElement) => {
+    e.preventDefault();
+    const rect = target.getBoundingClientRect();
+    setMenu({ tabId, rect });
   };
 
   if (state.openTabs.length === 0) return null;
@@ -163,7 +158,8 @@ export default function TabsHeader() {
           <div
             key={tab.id}
             className={`tab ${isActive ? 'tab-active' : ''}`}
-            onClick={e => handleTabClick(tab.id, isActive, e.currentTarget)}
+            onClick={() => { setMenu(null); setActiveTab(tab.id); }}
+            onContextMenu={e => handleTabContextMenu(e, tab.id, e.currentTarget)}
             draggable
             onDragStart={() => handleDragStart(tab.id)}
             onDragOver={e => handleDragOver(e, tab.id)}
@@ -183,7 +179,7 @@ export default function TabsHeader() {
       {menu && createPortal(
         <div
           className="save-prompt save-prompt-floating"
-          style={{ left: Math.max(12, menu.rect.left), top: menu.rect.bottom + 6 }}
+          style={{ left: menu.rect.left + menu.rect.width / 2, top: menu.rect.bottom + 6, transform: 'translateX(-50%)' }}
           onClick={e => e.stopPropagation()}
         >
           <div className="save-prompt-actions save-prompt-actions-vertical">
