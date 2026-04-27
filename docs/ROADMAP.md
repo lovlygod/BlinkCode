@@ -118,11 +118,11 @@ Git integration should make BlinkCode useful as a daily development environment 
 ### 2.1 Source Control panel
 
 - **Priority:** P0
-- **Status:** 🧭 Planned
+- **Status:** 🚧 In progress
 - **Description:** Add a dedicated Git panel for changed files, staged files and commits.
 - **Why it matters:** Source control is a core IDE feature. Users should be able to review and commit changes visually.
-- **Expected behavior:** Show unstaged, staged and untracked files; support stage, unstage, discard, commit and refresh.
-- **Implementation direction:** Start with direct Git commands on the backend and expose a small API for repository status.
+- **Current state:** MVP Source Control panel is implemented with backend Git API (`/api/git/status`, `/api/git/stage`, `/api/git/unstage`, `/api/git/discard`, `/api/git/commit`), frontend panel showing staged/unstaged/untracked files with collapsible sections, stage/unstage/discard actions per file, commit input with `Ctrl+Enter`, branch display, auto-refresh every 5 seconds, ActivityBar integration with mutually exclusive panel switching (Explorer/Search/Source Control), and shared resizable sidebar width.
+- **Next improvements:** Add confirm dialog before discard, diff preview on file click, inline diff gutter decorations in Monaco, push/pull/sync, merge conflict handling, and amend commit support.
 
 ### 2.2 Inline diff and gutter indicators
 
@@ -652,7 +652,7 @@ This table is the quick checklist for tracking what is already implemented and w
 | 1.7 | Split editor and tab workflow | P0 | ✅ Done | Split mode and tab management are implemented. |
 | 1.8 | SQLite persistence | P0 | ✅ Done | `better-sqlite3` stores editor state, settings, recent projects and histories. |
 | 1.9 | Status bar | P1 | ✅ Done | Shows editor and workspace metadata. |
-| 2.1 | Source Control panel | P0 | 🧭 Planned | Needs changed-file list, staging and commit UI. |
+| 2.1 | Source Control panel | P0 | 🚧 In progress | MVP panel with stage/unstage/discard/commit, ActivityBar integration, shared resizable sidebar. |
 | 2.2 | Inline diff and gutter indicators | P0 | 🧭 Planned | Needs Monaco decorations and diff editor integration. |
 | 2.3 | Git blame inline | P1 | 🧭 Planned | Needs blame parser and cached per-file blame data. |
 | 2.4 | GitHub and GitLab integration | P2 | 💡 Future | Requires authentication and provider API design. |
@@ -721,9 +721,9 @@ This table is the quick checklist for tracking what is already implemented and w
 
 ### Sprint 2 — Git workflow
 
-1. Git status API.
-2. Source Control panel.
-3. Stage, unstage and commit actions.
+1. ~~Git status API~~ ✅
+2. ~~Source Control panel~~ ✅
+3. ~~Stage, unstage and commit actions~~ ✅
 4. Inline diff and gutter indicators.
 
 ### Sprint 3 — web workflow
