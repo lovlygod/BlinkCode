@@ -165,6 +165,92 @@ app.get('/api/git-branch', (req, res) => {
   });
 });
 
+function runGit(args, cwd, callback) {
+  execFile('git', args, { cwd, maxBuffer: 1024 * 1024 }, callback);
+}
+
+app.get('/api/git/status', (req, res) => {
+  if (!workspace) return res.json({ isRepo: false, branch: null, staged: [], unstaged: [], untracked: [] });
+  const gitDir = path.join(workspace, '.git');
+  if (!fs.existsSync(gitDir)) return res.json({ isRepo: false, branch: null, staged: [], unstaged: [], untracked: [] });
+
+  runGit(['status', '--porcelain=v1', '-z', '--branch'], workspace, (err, stdout) => {
+    if (err) return res.json({ isRepo: false, branch: null, staged: [], unstaged: [], untracked: [] });
+
+    const entries = stdout.split('\0').filter(Boolean);
+    const staged = [];
+    const unstaged = [];
+    const untracked = [];
+    let branch = null;
+
+    for (const entry of entries) {
+      if (entry.startsWith('## ')) {
+        const branchPart = entry.slice(3).split('...')[0];
+        branch = branchPart || null;
+        continue;
+      }
+      if (entry.length < 4) continue;
+      const xy = entry.slice(0, 2);
+      const filePath = entry.slice(3);
+      const x = xy[0];
+      const y = xy[1];
+
+      if (x === '?' && y === '?') {
+        untracked.push({ path: filePath, status: 'untracked' });
+      } else {
+        if (x !== ' ' && x !== '?') {
+          staged.push({ path: filePath, status: x === 'A' ? 'added' : x === 'D' ? 'deleted' : 'modified' });
+        }
+        if (y !== ' ' && y !== '?') {
+          unstaged.push({ path: filePath, status: y === 'D' ? 'deleted' : 'modified' });
+        }
+      }
+    }
+
+    res.json({ isRepo: true, branch, staged, unstaged, untracked });
+  });
+});
+
+app.post('/api/git/stage', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const { paths } = req.body;
+  const args = paths && paths.length > 0 ? ['add', '--', ...paths] : ['add', '-A'];
+  runGit(args, workspace, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
+app.post('/api/git/unstage', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const { paths } = req.body;
+  const args = paths && paths.length > 0 ? ['reset', 'HEAD', '--', ...paths] : ['reset', 'HEAD'];
+  runGit(args, workspace, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
+app.post('/api/git/discard', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const { paths } = req.body;
+  if (!paths || paths.length === 0) return res.status(400).json({ error: 'No paths specified' });
+  runGit(['checkout', '--', ...paths], workspace, (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
+app.post('/api/git/commit', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const { message } = req.body;
+  if (!message || !message.trim()) return res.status(400).json({ error: 'Empty commit message' });
+  runGit(['commit', '-m', message.trim()], workspace, (err, stdout, stderr) => {
+    if (err) return res.status(500).json({ error: stderr || err.message });
+    res.json({ ok: true, output: stdout });
+  });
+});
+
 app.get('/api/files', (req, res) => {
   if (!workspace) return res.json({ files: [] });
   const files = [];

@@ -1,0 +1,283 @@
+.source-control-panel {
+  width: 330px;
+  min-width: 180px;
+  max-width: 420px;
+  flex-shrink: 0;
+  height: 100%;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary);
+  position: relative;
+}
+
+.source-control-panel.hidden {
+  display: none;
+}
+
+.sc-head {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.sc-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 16px;
+}
+
+.sc-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sc-icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sc-icon-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-base-hover);
+}
+
+.sc-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.sc-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-base-hover);
+}
+
+.sc-commit-area {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-commit-input {
+  width: 100%;
+  background: var(--bg-input, var(--surface-base));
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 68px;
+  max-height: 180px;
+  font-family: inherit;
+}
+
+.sc-commit-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.sc-commit-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sc-commit-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.sc-commit-btn:hover {
+  opacity: 0.9;
+}
+
+.sc-commit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sc-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sc-section {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.sc-section-head:hover {
+  background: var(--surface-base-hover);
+}
+
+.sc-section-count {
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin-left: 4px;
+}
+
+.sc-section-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.sc-file-item {
+  display: flex;
+  align-items: center;
+  padding: 3px 10px 3px 22px;
+  font-size: 12px;
+  cursor: pointer;
+  gap: 6px;
+  user-select: none;
+}
+
+.sc-file-item:hover {
+  background: var(--surface-base-hover);
+}
+
+.sc-file-status {
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  border-radius: 3px;
+  line-height: 16px;
+}
+
+.sc-file-status.added {
+  color: #4caf50;
+}
+
+.sc-file-status.modified {
+  color: #e0a024;
+}
+
+.sc-file-status.deleted {
+  color: #e05555;
+}
+
+.sc-file-status.untracked {
+  color: var(--text-tertiary);
+}
+
+.sc-file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.sc-file-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.sc-file-item:hover .sc-file-actions {
+  opacity: 1;
+}
+
+.sc-empty {
+  padding: 20px 14px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sc-no-repo {
+  padding: 20px 14px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.sc-branch-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 4px 10px 4px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sc-branch-label svg {
+  flex-shrink: 0;
+}
+
+.source-control-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 50;
+}
+
+.source-control-resizer:hover {
+  background: var(--accent);
+  opacity: 0.6;
+}

@@ -123,6 +123,7 @@ const initialState: EditorState = {
   showAIPanel: false,
   showSettings: false,
   showSearchPanel: false,
+  showSourceControl: false,
   showProblemsPanel: false,
   sidebarWidth: 250,
   sidebarVisible: true,
@@ -460,7 +461,25 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
 
     case 'REMOVE_TOAST': return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload.id) };
 
-    case 'TOGGLE_SIDEBAR': return { ...state, sidebarVisible: !state.sidebarVisible };
+    case 'TOGGLE_SIDEBAR': {
+      if (!state.sidebarVisible) {
+        return {
+          ...state,
+          sidebarVisible: true,
+          showSearchPanel: false,
+          showSourceControl: false,
+        };
+      }
+      if (state.showSearchPanel || state.showSourceControl) {
+        return {
+          ...state,
+          sidebarVisible: true,
+          showSearchPanel: false,
+          showSourceControl: false,
+        };
+      }
+      return { ...state, sidebarVisible: false };
+    }
 
     case 'REORDER_TABS': return { ...state, openTabs: action.payload.tabs };
 
@@ -534,7 +553,24 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
     }
 
     case 'TOGGLE_SETTINGS': return { ...state, showSettings: !state.showSettings };
-    case 'TOGGLE_SEARCH_PANEL': return { ...state, showSearchPanel: !state.showSearchPanel, sidebarVisible: true };
+    case 'TOGGLE_SEARCH_PANEL': {
+      const next = !state.showSearchPanel;
+      return {
+        ...state,
+        showSearchPanel: next,
+        showSourceControl: false,
+        sidebarVisible: true,
+      };
+    }
+    case 'TOGGLE_SOURCE_CONTROL': {
+      const next = !state.showSourceControl;
+      return {
+        ...state,
+        showSourceControl: next,
+        showSearchPanel: false,
+        sidebarVisible: true,
+      };
+    }
     case 'TOGGLE_PROBLEMS_PANEL': return { ...state, showProblemsPanel: !state.showProblemsPanel };
 
     case 'UPDATE_SETTINGS': {
@@ -741,6 +777,7 @@ interface Ctx {
   openFolderFromServer: (dirPath: string) => Promise<void>;
   toggleSettings: () => void;
   toggleSearchPanel: () => void;
+  toggleSourceControl: () => void;
   toggleProblemsPanel: () => void;
   updateSettings: (s: Partial<EditorSettings>) => void;
   openSettingsJson: (scope?: 'global' | 'workspace') => Promise<void>;
@@ -904,6 +941,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const collapseAll = useCallback(() => dispatch({ type: 'COLLAPSE_ALL' }), []);
   const toggleSettings = useCallback(() => dispatch({ type: 'TOGGLE_SETTINGS' }), []);
   const toggleSearchPanel = useCallback(() => dispatch({ type: 'TOGGLE_SEARCH_PANEL' }), []);
+  const toggleSourceControl = useCallback(() => dispatch({ type: 'TOGGLE_SOURCE_CONTROL' }), []);
   const toggleProblemsPanel = useCallback(() => dispatch({ type: 'TOGGLE_PROBLEMS_PANEL' }), []);
   const updateSettings = useCallback((s: Partial<EditorSettings>) => dispatch({ type: 'UPDATE_SETTINGS', payload: s }), []);
 
@@ -1209,7 +1247,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,
-      toggleSettings, toggleSearchPanel, toggleProblemsPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
+      toggleSettings, toggleSearchPanel, toggleSourceControl, toggleProblemsPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
     }}>
       {children}
     </EditorContext.Provider>

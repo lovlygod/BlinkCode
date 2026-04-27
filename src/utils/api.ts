@@ -262,3 +262,52 @@ export async function saveSettingsRaw(
     body: JSON.stringify({ content }),
   });
 }
+
+export interface GitFileEntry {
+  path: string;
+  status: 'added' | 'modified' | 'deleted' | 'untracked';
+}
+
+export interface GitStatusResponse {
+  isRepo: boolean;
+  branch: string | null;
+  staged: GitFileEntry[];
+  unstaged: GitFileEntry[];
+  untracked: GitFileEntry[];
+}
+
+export async function fetchGitStatus(): Promise<GitStatusResponse> {
+  return request(`${API}/git/status`);
+}
+
+export async function gitStage(paths?: string[]): Promise<void> {
+  await request(`${API}/git/stage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paths: paths || null }),
+  });
+}
+
+export async function gitUnstage(paths?: string[]): Promise<void> {
+  await request(`${API}/git/unstage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paths: paths || null }),
+  });
+}
+
+export async function gitDiscard(paths: string[]): Promise<void> {
+  await request(`${API}/git/discard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paths }),
+  });
+}
+
+export async function gitCommit(message: string): Promise<{ output: string }> {
+  return request(`${API}/git/commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+  });
+}

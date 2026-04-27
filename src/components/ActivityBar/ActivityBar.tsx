@@ -1,17 +1,17 @@
-import { Files, Search, Settings } from 'lucide-react';
+import { Files, Search, Settings, GitBranch } from 'lucide-react';
 import { useEditor } from '../../store/EditorContext';
 import { useT } from '../../hooks/useT';
 import './ActivityBar.css';
 
 export default function ActivityBar() {
-  const { state, toggleSidebar, toggleSearchPanel, toggleSettings } = useEditor();
+  const { state, toggleSidebar, toggleSearchPanel, toggleSourceControl, toggleSettings } = useEditor();
   const tt = useT();
 
   return (
     <aside className="activity-bar">
       <div className="activity-bar-top">
         <button
-          className={`activity-btn ${state.sidebarVisible ? 'active' : ''}`}
+          className={`activity-btn ${state.sidebarVisible && !state.showSearchPanel && !state.showSourceControl ? 'active' : ''}`}
           onClick={toggleSidebar}
           title={tt('explorer.title')}
         >
@@ -23,6 +23,13 @@ export default function ActivityBar() {
           title={tt('search.title')}
         >
           <Search size={22} />
+        </button>
+        <button
+          className={`activity-btn ${state.showSourceControl ? 'active' : ''}`}
+          onClick={toggleSourceControl}
+          title={tt('sc.title')}
+        >
+          <GitBranch size={22} />
         </button>
       </div>
 

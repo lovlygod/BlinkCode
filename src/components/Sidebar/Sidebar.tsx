@@ -3,7 +3,7 @@ import { useEditor } from '../../store/EditorContext';
 import type { FileNode } from '../../types';
 import { getFileIcon } from '../../utils/fileIcons';
 import { useT } from '../../hooks/useT';
-import { useResizable } from '../../hooks/useResizable';
+import { useHorizontalResize } from '../../hooks/useHorizontalResize';
 import { isSupportedWebFile } from '../../utils/supportedWebFiles';
 import { collectForUpload, uploadFolder } from '../../utils/fileSystem';
 import { createFileOnServer, saveFile, closeWorkspace, fetchRecentProjects } from '../../utils/api';
@@ -114,7 +114,6 @@ export default function Sidebar() {
   const [showFilter, setShowFilter] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragSrc = useRef<string | null>(null);
-  const resizeRef = useRef<HTMLDivElement>(null);
   const inlineRef = useRef<HTMLInputElement>(null);
   const renameRef = useRef<HTMLInputElement>(null);
   const filterRef = useRef<HTMLInputElement>(null);
@@ -132,12 +131,7 @@ export default function Sidebar() {
   useEffect(() => { if (showFilter) filterRef.current?.focus(); }, [showFilter]);
   useEffect(() => { const h = () => setCtx(null); window.addEventListener('click', h); return () => window.removeEventListener('click', h); }, []);
 
-  const handleResize = useCallback((e: MouseEvent) => {
-    const rect = resizeRef.current?.parentElement?.getBoundingClientRect();
-    if (rect) setSidebarWidth(e.clientX - rect.left);
-  }, [setSidebarWidth]);
-
-  useResizable(resizeRef, handleResize, 'col');
+  const resizerRef = useHorizontalResize(state.sidebarWidth, setSidebarWidth);
 
   const submitInline = () => {
     if (!inline) return;
@@ -351,7 +345,7 @@ export default function Sidebar() {
     addToast(files.length === 1 ? `Dropped ${files[0].name}` : `Dropped ${files.length} files`, 'success');
   }, [loadFromServer, addToast]);
 
-  if (!state.sidebarVisible) return null;
+  if (!state.sidebarVisible || state.showSearchPanel || state.showSourceControl) return null;
 
   return (
     <div className={`sidebar${dropActive ? ' drop-active' : ''}`} style={{ width: state.sidebarWidth }} onContextMenu={e => onCtx(e, null, null)} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
@@ -438,7 +432,7 @@ export default function Sidebar() {
           </>
         )}
       </div>
-      <div className="sidebar-resizer" ref={resizeRef} />
+      <div className="sidebar-resizer" ref={resizerRef} />
 
       {ctx && (
         <div className="ctx-menu" style={{ left: ctx.x, top: ctx.y }} onClick={e => e.stopPropagation()}>

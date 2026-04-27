@@ -89,6 +89,7 @@ export interface EditorState {
   showAIPanel: boolean;
   showSettings: boolean;
   showSearchPanel: boolean;
+  showSourceControl: boolean;
   showProblemsPanel: boolean;
   sidebarWidth: number;
   sidebarVisible: boolean;
@@ -161,6 +162,7 @@ export type EditorAction =
   | { type: 'RESTORE_STATE'; payload: SavedEditorState }
   | { type: 'TOGGLE_SETTINGS' }
   | { type: 'TOGGLE_SEARCH_PANEL' }
+  | { type: 'TOGGLE_SOURCE_CONTROL' }
   | { type: 'TOGGLE_PROBLEMS_PANEL' }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<EditorSettings> }
   | { type: 'SET_WORKSPACE_DIR'; payload: string }

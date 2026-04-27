@@ -4,6 +4,7 @@ import ActivityBar from './components/ActivityBar/ActivityBar';
 import TabsHeader from './components/TabsHeader/TabsHeader';
 import Sidebar from './components/Sidebar/Sidebar';
 import SearchPanel from './components/SearchPanel/SearchPanel';
+import SourceControl from './components/SourceControl/SourceControl';
 import CodeEditor from './components/CodeEditor/CodeEditor';
 import TerminalPanel from './components/Terminal/Terminal';
 import ProblemsPanel from './components/ProblemsPanel/ProblemsPanel';
@@ -29,6 +30,7 @@ function EditorLayout() {
         <ActivityBar />
         <Sidebar />
         <SearchPanel />
+        <SourceControl />
         <div className="editor-area">
           {!state.browserOpen && (
             <>
