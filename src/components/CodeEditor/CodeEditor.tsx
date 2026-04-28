@@ -56,6 +56,26 @@ function defineBlinkTheme(monaco: any, name: string, theme: { base: string; inhe
   });
 }
 
+function formatRelativeTime(unixSeconds: number): string {
+  if (!unixSeconds) return 'just now';
+  const diff = Math.max(0, Math.floor(Date.now() / 1000) - unixSeconds);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) {
+    const m = Math.floor(diff / 60);
+    return `${m}m ago`;
+  }
+  if (diff < 86400) {
+    const h = Math.floor(diff / 3600);
+    return `${h}h ago`;
+  }
+  if (diff < 2592000) {
+    const d = Math.floor(diff / 86400);
+    return `${d}d ago`;
+  }
+  const dt = new Date(unixSeconds * 1000);
+  return dt.toLocaleDateString();
+}
+
 export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 'secondary' }) {
   const { state, updateFileContent, getActiveFile, getSplitActiveFile, registerEditor, dispatch } = useEditor();
   const getFileForGroup = group === 'primary' ? getActiveFile : getSplitActiveFile;
@@ -92,6 +112,10 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const prevZoomRef = useRef(1);
 
   const ZOOM_LEVELS = [0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 8, 10];
+  const blameRelativeTime = blameInfo ? formatRelativeTime(blameInfo.authorTime) : '';
+  const blameTitle = blameInfo
+    ? `${blameInfo.author}\n${blameInfo.summary}\n${blameInfo.commit}\n${new Date((blameInfo.authorTime || 0) * 1000).toLocaleString()}`
+    : '';
 
   useEffect(() => { setImgError(false); setZoomIdx(4); setPan({ x: 0, y: 0 }); prevZoomRef.current = 1; }, [activeFile?.id]);
 
@@ -1440,8 +1464,10 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   return (
     <div className="code-editor">
       {state.settings.gitInlineBlame && blameInfo && (
-        <div className="editor-blame" role="note">
+        <div className="editor-blame" role="note" title={blameTitle}>
           <span className="editor-blame-author">{blameInfo.author}</span>
+          <span className="editor-blame-sep">·</span>
+          <span className="editor-blame-time">{blameRelativeTime}</span>
           <span className="editor-blame-sep">·</span>
           <span className="editor-blame-summary">{blameInfo.summary}</span>
           <span className="editor-blame-sha">{blameInfo.shortCommit}</span>

@@ -15,8 +15,8 @@
   z-index: 6;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  max-width: min(68%, 860px);
+  gap: 5px;
+  max-width: min(74%, 920px);
   padding: 3px 8px;
   border-radius: 8px;
   border: 1px solid var(--border-subtle);
@@ -37,9 +37,15 @@
 }
 
 .editor-blame-summary {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.editor-blame-time {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
 }
 
 .editor-blame-sha {
@@ -48,6 +54,20 @@
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
+}
+
+@media (max-width: 1100px) {
+  .editor-blame {
+    max-width: min(86%, 760px);
+    right: 8px;
+    top: 4px;
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .editor-blame-sha {
+    padding: 1px 5px;
+  }
 }
 
 .editor-notice {
