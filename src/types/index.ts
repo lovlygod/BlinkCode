@@ -65,6 +65,7 @@ export interface EditorSettings {
   bracketPairColorization: boolean;
   autoClosingBrackets: boolean;
   smoothScrolling: boolean;
+  gitInlineBlame: boolean;
   trimTrailingWhitespace: boolean;
   insertSpaces: boolean;
   animations: boolean;

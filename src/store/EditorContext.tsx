@@ -54,6 +54,7 @@ const defaultSettings: EditorSettings = {
   bracketPairColorization: true,
   autoClosingBrackets: true,
   smoothScrolling: true,
+  gitInlineBlame: true,
   trimTrailingWhitespace: false,
   insertSpaces: true,
   animations: true,

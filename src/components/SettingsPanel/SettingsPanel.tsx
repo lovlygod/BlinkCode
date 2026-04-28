@@ -412,6 +412,22 @@ export default function SettingsPanel() {
                   <div className="settings-row">
                     <div className="settings-row-label">
                       <div>
+                        <div className="settings-row-name">{tt('settings.gitInlineBlame')}</div>
+                        <div className="settings-row-desc">{tt('settings.gitInlineBlame.desc')}</div>
+                      </div>
+                    </div>
+                    <div className="settings-row-control">
+                      <button className={`settings-toggle ${s.gitInlineBlame ? 'on' : ''}`} onClick={() => updateSettings({ gitInlineBlame: !s.gitInlineBlame })}>
+                        <span className="toggle-track"><span className="toggle-thumb" /></span>
+                        <span className="toggle-label">{s.gitInlineBlame ? tt('on') : tt('off')}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <hr className="settings-divider" />
+
+                  <div className="settings-row">
+                    <div className="settings-row-label">
+                      <div>
                         <div className="settings-row-name">{tt('settings.trimTrailingWhitespace')}</div>
                         <div className="settings-row-desc">{tt('settings.trimTrailingWhitespace.desc')}</div>
                       </div>

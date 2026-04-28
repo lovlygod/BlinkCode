@@ -182,6 +182,10 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   }, [activeFile?.id]);
 
   useEffect(() => {
+    if (!state.settings.gitInlineBlame) {
+      setBlameInfo(null);
+      return;
+    }
     const isNormalFile = Boolean(activeFile?.serverPath && !activeFile.serverPath.startsWith('__'));
     if (!isNormalFile) {
       setBlameInfo(null);
@@ -218,7 +222,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
         blameTimerRef.current = null;
       }
     };
-  }, [activeFile?.id, activeFile?.serverPath]);
+  }, [activeFile?.id, activeFile?.serverPath, state.settings.gitInlineBlame]);
 
   useEffect(() => {
     if (editorRef.current && monacoRef.current) {
@@ -1435,7 +1439,7 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
 
   return (
     <div className="code-editor">
-      {blameInfo && (
+      {state.settings.gitInlineBlame && blameInfo && (
         <div className="editor-blame" role="note">
           <span className="editor-blame-author">{blameInfo.author}</span>
           <span className="editor-blame-sep">·</span>
