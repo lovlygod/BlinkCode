@@ -26,7 +26,7 @@ console.log("Sum of [1,2,3,4,5] = " + sum);
           id: uuid(), name: 'app.js', type: 'file', language: 'javascript',
           content: `class App {
   constructor() {
-    this.version = "0.3.0";
+    this.version = "0.4.0";
     this.name = "BlinkCode";
   }
   start() {
@@ -96,7 +96,7 @@ body {
       id: uuid(), name: 'package.json', type: 'file', language: 'json',
       content: `{
   "name": "blinkcode-project",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"

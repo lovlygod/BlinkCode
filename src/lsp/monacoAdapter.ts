@@ -127,7 +127,7 @@ export function createLspSession(monaco: Monaco, cfg: LspSessionConfig): LspSess
   const rootUri = pathToUri(cfg.workspacePath);
   const initializeParams = {
     processId: null,
-    clientInfo: { name: 'BlinkCode', version: '0.3.0' },
+    clientInfo: { name: 'BlinkCode', version: '0.4.0' },
     rootUri,
     rootPath: cfg.workspacePath,
     workspaceFolders: [{ uri: rootUri, name: 'workspace' }],

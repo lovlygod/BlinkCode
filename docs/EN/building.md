@@ -46,8 +46,8 @@ npm run dist:win:portable  # portable
 Artifacts are written into `release/`. The exact filenames depend on the
 current version in [`package.json`](../../package.json), for example:
 
-- `release/BlinkCode-Setup-0.3.0-x64.exe`
-- `release/BlinkCode-Portable-0.3.0-x64.exe`
+- `release/BlinkCode-Setup-0.4.0-x64.exe`
+- `release/BlinkCode-Portable-0.4.0-x64.exe`
 - `release/latest.yml` — auto-update metadata
 
 ## Artifacts
@@ -92,7 +92,7 @@ reject them. Rule of thumb: **always rebuild before publishing a release**.
 3. Commit and push
 4. Run `npm run dist:win`
 5. Go to GitHub → **Releases → Draft a new release**
-6. Create a tag `v<version>`, e.g. `v0.3.0`, targeting `main`
+6. Create a tag `v<version>`, e.g. `v0.4.0`, targeting `main`
 7. Upload these files from `release/`:
    - `BlinkCode-Setup-<version>-x64.exe`
    - `BlinkCode-Portable-<version>-x64.exe`

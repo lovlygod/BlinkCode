@@ -4,6 +4,7 @@ import type { EditorSettings } from '../../types';
 import { THEME_LIST, type ThemeName } from '../../store/EditorContext';
 import { X, Settings, Keyboard, RotateCcw, ChevronDown, FileJson } from 'lucide-react';
 import { useT } from '../../hooks/useT';
+import { useSoftClickSound } from '../../hooks/useSoftClickSound';
 import ColorPicker from '../common/ColorPicker';
 import './SettingsPanel.css';
 
@@ -51,6 +52,8 @@ function SettingsSelect({ options, value, onChange }: { options: SelectOption[];
 export default function SettingsPanel() {
   const { state, toggleSettings, updateSettings, openSettingsJson } = useEditor();
   const tt = useT();
+  const playSoftClick = useSoftClickSound({ enabled: state.showSettings, minIntervalMs: 55, volume: 0.035, preset: 'click' });
+  const playSelectClick = useSoftClickSound({ enabled: state.showSettings, minIntervalMs: 45, volume: 0.032, preset: 'select' });
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [recordingId, setRecordingId] = useState<string | null>(null);
@@ -79,6 +82,20 @@ export default function SettingsPanel() {
   if (!state.showSettings) return null;
 
   const s = state.settings;
+
+  const handlePanelMouseDownCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    if (target.closest('input, textarea, [contenteditable="true"]')) return;
+    if (target.closest('.settings-select-btn, .settings-select-option')) {
+      playSelectClick();
+      return;
+    }
+    const clickable = target.closest('button, [role="button"], a, .settings-select-option, .settings-select-btn');
+    if (!clickable) return;
+    if ((clickable as HTMLButtonElement).disabled) return;
+    playSoftClick();
+  };
 
   const recordKey = (e: React.KeyboardEvent, id: string) => {
     e.preventDefault();
@@ -134,7 +151,7 @@ export default function SettingsPanel() {
 
   return (
     <div className="settings-overlay">
-      <div className="settings-panel" ref={panelRef}>
+      <div className="settings-panel" ref={panelRef} onMouseDownCapture={handlePanelMouseDownCapture}>
         <div className="settings-head">
           <div className="settings-head-left">
             <Settings size={15} className="settings-icon" />
@@ -618,7 +635,7 @@ export default function SettingsPanel() {
         </div>
         <div className="settings-footer">
           <span className="settings-footer-blink">Blink</span><span className="settings-footer-code">Code</span>
-          <span className="settings-footer-version">v0.3.0</span>
+          <span className="settings-footer-version">v0.4.0</span>
         </div>
       </div>
     </div>

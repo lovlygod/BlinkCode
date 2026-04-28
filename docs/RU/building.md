@@ -47,8 +47,8 @@ npm run dist:win:portable  # portable
 Артефакты попадают в `release/`. Имена файлов зависят от текущей версии в
 [`package.json`](../../package.json), например:
 
-- `release/BlinkCode-Setup-0.3.0-x64.exe`
-- `release/BlinkCode-Portable-0.3.0-x64.exe`
+- `release/BlinkCode-Setup-0.4.0-x64.exe`
+- `release/BlinkCode-Portable-0.4.0-x64.exe`
 - `release/latest.yml` — метаданные auto-update
 
 ## Артефакты
@@ -92,7 +92,7 @@ dev-раскладке, и в `process.resourcesPath/app.asar.unpacked/node_modu
 3. Закоммитить и запушить
 4. Запустить `npm run dist:win`
 5. На GitHub → **Releases → Draft a new release**
-6. Создать тег `v<version>`, например `v0.3.0`, `Target: main`
+6. Создать тег `v<version>`, например `v0.4.0`, `Target: main`
 7. Прикрепить эти файлы из `release/`:
    - `BlinkCode-Setup-<version>-x64.exe`
    - `BlinkCode-Portable-<version>-x64.exe`

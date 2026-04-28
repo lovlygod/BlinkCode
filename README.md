@@ -110,8 +110,8 @@ npm run dist:win
 
 Build artifacts are written into [`release/`](release):
 
-- installer: `BlinkCode-Setup-0.3.0-x64.exe`
-- portable: `BlinkCode-Portable-0.3.0-x64.exe`
+- installer: `BlinkCode-Setup-0.4.0-x64.exe`
+- portable: `BlinkCode-Portable-0.4.0-x64.exe`
 
 Packaging details, `asarUnpack`, auto-update and GitHub-release flow are
 documented in [`docs/EN/building.md`](./docs/EN/building.md).

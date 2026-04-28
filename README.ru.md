@@ -111,8 +111,8 @@ npm run dist:win
 
 Артефакты попадают в [`release/`](release):
 
-- installer: `BlinkCode-Setup-0.3.0-x64.exe`
-- portable: `BlinkCode-Portable-0.3.0-x64.exe`
+- installer: `BlinkCode-Setup-0.4.0-x64.exe`
+- portable: `BlinkCode-Portable-0.4.0-x64.exe`
 
 Детали упаковки, `asarUnpack`, auto-update и публикация GitHub-релиза —
 в [`docs/RU/building.md`](./docs/RU/building.md).
