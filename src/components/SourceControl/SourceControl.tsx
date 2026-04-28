@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronRight, Download, GitBranch, Minus, Plus, RefreshCw, RotateCcw, Upload, X } from 'lucide-react';
 import { useEditor } from '../../store/EditorContext';
 import type { FileNode } from '../../types';
-import { fetchGitStatus, fetchGitFileDiff, gitStage, gitUnstage, gitDiscard, gitCommit, gitPull, gitPush, type GitStatusResponse, type GitFileEntry } from '../../utils/api';
+import { fetchGitStatus, fetchGitFileDiff, fetchGitInlineDiff, gitStage, gitUnstage, gitDiscard, gitCommit, gitPull, gitPush, type GitStatusResponse, type GitFileEntry } from '../../utils/api';
 import { useT } from '../../hooks/useT';
 import { useHorizontalResize } from '../../hooks/useHorizontalResize';
 import { getMonacoLanguage } from '../../utils/supportedWebFiles';
@@ -51,7 +51,7 @@ function formatGitActionError(action: 'commit' | 'pull' | 'push', err: unknown, 
 }
 
 export default function SourceControl() {
-  const { state, openFile, openDiffPreview, toggleSourceControl, addToast, setSidebarWidth } = useEditor();
+  const { state, openDiffPreview, toggleSourceControl, addToast, setSidebarWidth } = useEditor();
   const tt = useT();
   const resizerRef = useHorizontalResize(state.sidebarWidth, setSidebarWidth);
   const [status, setStatus] = useState<GitStatusResponse | null>(null);
@@ -170,14 +170,9 @@ export default function SourceControl() {
   }, [refresh, addToast, tt]);
 
   const handleFileClick = useCallback(async (item: GitFileEntry, staged: boolean) => {
-    if (item.status === 'untracked') {
-      const node = findNodeByPath(state.files, item.path);
-      if (node) openFile(node);
-      return;
-    }
-
     try {
       const diff = await fetchGitFileDiff(item.path, staged, item.status);
+      const inline = await fetchGitInlineDiff(item.path, staged, item.status);
       const name = item.path.split('/').pop() || item.path;
       const node: FileNode = {
         id: `git-diff:${staged ? 'staged' : 'unstaged'}:${item.path}`,
@@ -189,12 +184,13 @@ export default function SourceControl() {
         dirty: false,
         diffOriginalContent: diff.original,
         diffModifiedContent: diff.modified,
+        diffHunks: inline.hunks,
       };
       openDiffPreview(node);
     } catch (err: any) {
       addToast(tt('sc.diffFailed') + (err?.message || ''), 'error');
     }
-  }, [state.files, openFile, openDiffPreview, addToast, tt]);
+  }, [openDiffPreview, addToast, tt]);
 
   if (!state.showSourceControl) return null;
 
@@ -367,15 +363,4 @@ export default function SourceControl() {
       <div className="source-control-resizer" ref={resizerRef} />
     </div>
   );
-}
-
-function findNodeByPath(nodes: FileNode[], serverPath: string): FileNode | null {
-  for (const node of nodes) {
-    if (node.serverPath === serverPath) return node;
-    if (node.children) {
-      const found = findNodeByPath(node.children, serverPath);
-      if (found) return found;
-    }
-  }
-  return null;
 }

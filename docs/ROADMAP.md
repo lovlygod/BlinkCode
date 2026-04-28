@@ -128,11 +128,13 @@ Git integration should make BlinkCode useful as a daily development environment 
 ### 2.2 Inline diff and gutter indicators
 
 - **Priority:** P0
-- [ ] **Status:** Planned
+- [x] **Status:** Done
 - **Description:** Display changed lines directly in the editor gutter and provide file diff views.
 - **Why it matters:** Developers need to see what changed without opening an external Git tool.
 - **Expected behavior:** Added, modified and deleted lines should be highlighted. Users should be able to open a diff against `HEAD`.
-- **Implementation direction:** Use Monaco decorations for gutter markers and Monaco DiffEditor for file comparisons.
+- **Current state:** Inline Git decorations are rendered directly in Monaco for added/modified/deleted hunks, including gutter stripes and whole-line highlighting. Untracked files receive immediate local "added" highlighting on open, with cache-assisted re-render when switching between files.
+- **Completed in this cycle:** Added backend inline diff API integration, client-side hunk mapping, stable side-by-side diff preview, extracted diff UI into a dedicated component (`DiffPreview`), synchronized pane scrolling, syntax highlighting in diff preview, and improved visual gutter placement.
+- **Notes:** Diff preview is opened from Source Control file entries and uses virtual diff tabs with cleaned display paths.
 
 ### 2.3 Git blame inline
 
@@ -653,8 +655,8 @@ This table is the quick checklist for tracking what is already implemented and w
 | 1.7 | Split editor and tab workflow | P0 | [x] Done | Split mode and tab management are implemented. |
 | 1.8 | SQLite persistence | P0 | [x] Done | `better-sqlite3` stores editor state, settings, recent projects and histories. |
 | 1.9 | Status bar | P1 | [x] Done | Shows editor and workspace metadata. |
-| 2.1 | Source Control panel | P0 | [ ] In progress | MVP panel with stage/unstage/discard/commit, ActivityBar integration, shared resizable sidebar. |
-| 2.2 | Inline diff and gutter indicators | P0 | [ ] Planned | Needs Monaco decorations and diff editor integration. |
+| 2.1 | Source Control panel | P0 | [x] Done | Full panel with stage/unstage/discard/commit, pull/push, diff preview, error handling and resizable layout. |
+| 2.2 | Inline diff and gutter indicators | P0 | [x] Done | Monaco gutter/line decorations, inline diff hunks, extracted diff preview component with synced panes and syntax coloring. |
 | 2.3 | Git blame inline | P1 | [ ] Planned | Needs blame parser and cached per-file blame data. |
 | 2.4 | GitHub and GitLab integration | P2 | [ ] Future | Requires authentication and provider API design. |
 | 3.1 | NPM scripts panel | P1 | [ ] Planned | Needs script detection from `package.json` and terminal integration. |
@@ -725,7 +727,7 @@ This table is the quick checklist for tracking what is already implemented and w
 - [x] Git status API
 - [x] Source Control panel
 - [x] Stage, unstage and commit actions
-- [ ] Inline diff and gutter indicators.
+- [x] Inline diff and gutter indicators.
 
 ### Sprint 3 — web workflow
 

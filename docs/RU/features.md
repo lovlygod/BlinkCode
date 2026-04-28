@@ -114,6 +114,15 @@
 - Recent projects в пустом состоянии проводника
 - Централизованные правила поддержки файлов — [`supportedWebFiles.ts`](../../src/utils/supportedWebFiles.ts)
 
+### Контроль версий и inline diff
+
+- Полноценная панель контроля версий с секциями staged / unstaged / untracked — [`SourceControl`](../../src/components/SourceControl/SourceControl.tsx)
+- Действия stage, unstage, discard, commit, pull и push с понятными контекстными ошибками
+- Предпросмотр diff по клику на изменённый файл: side-by-side режим Original / Current
+- Вынесенный компонент diff-предпросмотра — [`DiffPreview`](../../src/components/CodeEditor/DiffPreview.tsx) со стилями в [`DiffPreview.css`](../../src/components/CodeEditor/DiffPreview.css)
+- Inline Git-декорации Monaco для added / modified / deleted строк в обычном редакторе — [`CodeEditor`](../../src/components/CodeEditor/CodeEditor.tsx)
+- Мгновенная подсветка untracked-файлов и cache-assisted повторное применение декораций при переключении между файлами
+
 ## Работа с файлами
 
 - Поддерживаемые файлы открываются в Monaco

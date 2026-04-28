@@ -1,0 +1,124 @@
+.diff-notice {
+  height: 30px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--bg-editor) 92%, var(--surface-base));
+  font-size: 12px;
+}
+
+.diff-notice-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.diff-notice-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-tertiary);
+}
+
+.simple-diff {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-top: 1px solid var(--border-subtle);
+  overflow: hidden;
+  background: var(--bg-editor);
+}
+
+.simple-diff-pane {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.simple-diff-pane:last-child {
+  border-right: none;
+}
+
+.simple-diff-pane-title {
+  flex-shrink: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-editor) 94%, var(--surface-base));
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.simple-diff-code {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  overflow: auto;
+  background: var(--bg-editor);
+  color: var(--text-primary);
+  font-family: inherit;
+  line-height: 1.55;
+  --diff-line-width: 3200px;
+}
+
+.simple-diff-code.monaco-host {
+  padding: 0;
+}
+
+.simple-diff-code.monaco-host .monaco-editor,
+.simple-diff-code.monaco-host .overflow-guard {
+  border-radius: 0;
+}
+
+.simple-diff-line {
+  display: grid;
+  grid-template-columns: 52px var(--diff-line-width);
+  width: calc(52px + var(--diff-line-width));
+  min-width: 100%;
+  min-height: 1.55em;
+  white-space: pre;
+}
+
+.simple-diff-line.removed {
+  background: rgba(248, 81, 73, 0.18);
+}
+
+.simple-diff-line.added {
+  background: rgba(63, 185, 80, 0.14);
+}
+
+.simple-diff-line.modified {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.simple-diff-line-no {
+  position: sticky;
+  left: -2px;
+  padding-right: 12px;
+  text-align: right;
+  user-select: none;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-editor) 92%, var(--surface-base));
+}
+
+.simple-diff-line-added-bg {
+  background: rgba(63, 185, 80, 0.14) !important;
+}
+
+.simple-diff-line-removed-bg {
+  background: rgba(248, 81, 73, 0.18) !important;
+}
+
+.simple-diff-line-modified-bg {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+

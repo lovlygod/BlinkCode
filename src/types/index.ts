@@ -14,6 +14,7 @@ export interface FileNode {
   settingsFilePath?: string;
   diffOriginalContent?: string;
   diffModifiedContent?: string;
+  diffHunks?: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; type: 'added' | 'deleted' | 'modified' }>;
 }
 
 export interface Tab {

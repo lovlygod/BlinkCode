@@ -1,12 +1,13 @@
 import { useCallback, useRef, useEffect, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useEditor } from '../../store/EditorContext';
-import { isImageFile, getRawFileUrl } from '../../utils/api';
+import { isImageFile, getRawFileUrl, fetchGitStatus, fetchGitInlineDiff, type GitFileEntry } from '../../utils/api';
 import { FileWarning, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useT } from '../../hooks/useT';
 import { getDetailedFileSupportInfo, getFileSupportInfo, getMonacoLanguage } from '../../utils/supportedWebFiles';
 import BlinkLogo from '../common/BlinkLogo';
 import DotGrid from '../common/DotGrid';
+import DiffPreview from './DiffPreview';
 import { attachLspToEditor } from '../../lsp/session';
 import './CodeEditor.css';
 
@@ -55,15 +56,6 @@ function defineBlinkTheme(monaco: any, name: string, theme: { base: string; inhe
   });
 }
 
-function getDiffDisplayPath(serverPath: string | undefined, fallback: string): string {
-  if (!serverPath) return fallback;
-  return serverPath.replace(/^__git_diff__\/(staged|unstaged)\//, '');
-}
-
-function renderDiffText(content: string): string[] {
-  return content.split('\n');
-}
-
 export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 'secondary' }) {
   const { state, updateFileContent, getActiveFile, getSplitActiveFile, registerEditor, dispatch } = useEditor();
   const getFileForGroup = group === 'primary' ? getActiveFile : getSplitActiveFile;
@@ -83,9 +75,9 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const saveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
-  const diffLeftRef = useRef<HTMLPreElement>(null);
-  const diffRightRef = useRef<HTMLPreElement>(null);
-  const syncingDiffScrollRef = useRef(false);
+  const gitDecorationsRef = useRef<string[]>([]);
+  const gitStatusCacheRef = useRef<GitFileEntry[] | null>(null);
+  const gitInlineCacheRef = useRef<Map<string, { hunks: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; type: 'added' | 'deleted' | 'modified' }>; ts: number }>>(new Map());
   const settingsRef = useRef(state.settings);
   settingsRef.current = state.settings;
   const [imgError, setImgError] = useState(false);
@@ -131,21 +123,6 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const handleRequestDismissOnboarding = () => {
     setShowOnboardingDismiss(true);
   };
-
-  const syncDiffScroll = useCallback((source: 'left' | 'right') => {
-    if (syncingDiffScrollRef.current) return;
-
-    const from = source === 'left' ? diffLeftRef.current : diffRightRef.current;
-    const to = source === 'left' ? diffRightRef.current : diffLeftRef.current;
-    if (!from || !to) return;
-
-    syncingDiffScrollRef.current = true;
-    to.scrollTop = from.scrollTop;
-    to.scrollLeft = from.scrollLeft;
-    requestAnimationFrame(() => {
-      syncingDiffScrollRef.current = false;
-    });
-  }, []);
 
   const adjustPanForZoom = (oldZoom: number, newZoom: number) => {
     const el = previewRef.current;
@@ -221,6 +198,120 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
       monacoRef.current.editor.setTheme(themeName);
     }
   }, [state.settings, activeFile?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const clearDecorations = () => {
+      const editor = editorRef.current;
+      if (!editor) return;
+      gitDecorationsRef.current = editor.deltaDecorations(gitDecorationsRef.current, []);
+    };
+
+    const applyGitDecorations = async () => {
+      const editor = editorRef.current;
+      const monaco = monacoRef.current;
+      if (!editor || !monaco) return;
+      if (!activeFile?.serverPath || activeFile.serverPath.startsWith('__')) {
+        clearDecorations();
+        return;
+      }
+
+      const applyFromHunks = (hunks: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; type: 'added' | 'deleted' | 'modified' }>) => {
+        const decorations: any[] = [];
+        for (const h of hunks || []) {
+          const className = h.type === 'added'
+            ? 'git-inline-added'
+            : h.type === 'deleted'
+              ? 'git-inline-deleted'
+              : 'git-inline-modified';
+
+          const linesClassName = h.type === 'added'
+            ? 'git-inline-gutter-added'
+            : h.type === 'deleted'
+              ? 'git-inline-gutter-deleted'
+              : 'git-inline-gutter-modified';
+
+          const start = Math.max(1, h.newStart || 1);
+          const len = Math.max(1, h.newLines || 1);
+          const end = start + len - 1;
+
+          decorations.push({
+            range: new monaco.Range(start, 1, end, 1),
+            options: {
+              isWholeLine: true,
+              className,
+              linesDecorationsClassName: linesClassName,
+            },
+          });
+        }
+        gitDecorationsRef.current = editor.deltaDecorations(gitDecorationsRef.current, decorations);
+      };
+
+      const cacheKey = activeFile.serverPath;
+      const cached = gitInlineCacheRef.current.get(cacheKey);
+      if (cached) {
+        applyFromHunks(cached.hunks);
+      }
+
+      try {
+        const status = await fetchGitStatus();
+        if (cancelled) return;
+        if (!status?.isRepo) {
+          clearDecorations();
+          return;
+        }
+
+        gitStatusCacheRef.current = [...status.unstaged, ...status.staged, ...status.untracked];
+
+        const find = (items: GitFileEntry[]) => items.find(i => i.path === activeFile.serverPath) || null;
+        const unstaged = find(status.unstaged);
+        const staged = find(status.staged);
+        const untracked = find(status.untracked);
+        const target = unstaged || staged || untracked;
+
+        if (!target && gitStatusCacheRef.current) {
+          const cachedTarget = gitStatusCacheRef.current.find(i => i.path === activeFile.serverPath) || null;
+          if (cachedTarget?.status === 'untracked') {
+            const lineCount = Math.max(1, (activeFile.content || '').split('\n').length);
+            const localHunks = [{ oldStart: 1, oldLines: 0, newStart: 1, newLines: lineCount, type: 'added' as const }];
+            applyFromHunks(localHunks);
+            gitInlineCacheRef.current.set(cacheKey, { hunks: localHunks, ts: Date.now() });
+            return;
+          }
+        }
+
+        if (!target) {
+          clearDecorations();
+          return;
+        }
+
+        if (target.status === 'untracked') {
+          const lineCount = Math.max(1, (activeFile.content || '').split('\n').length);
+          const localHunks = [{ oldStart: 1, oldLines: 0, newStart: 1, newLines: lineCount, type: 'added' as const }];
+          applyFromHunks(localHunks);
+          gitInlineCacheRef.current.set(cacheKey, { hunks: localHunks, ts: Date.now() });
+          return;
+        }
+
+        const diff = await fetchGitInlineDiff(activeFile.serverPath, Boolean(staged && !unstaged), target.status);
+        if (cancelled) return;
+        applyFromHunks(diff.hunks || []);
+        gitInlineCacheRef.current.set(cacheKey, { hunks: diff.hunks || [], ts: Date.now() });
+      } catch {
+        clearDecorations();
+      }
+    };
+
+    applyGitDecorations();
+    const timer = setInterval(applyGitDecorations, 1200);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      clearDecorations();
+    };
+  }, [activeFile?.id, activeFile?.serverPath, activeFile?.content]);
 
   const handleMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
@@ -1277,40 +1368,18 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   }
 
   if (activeFile.diffOriginalContent !== undefined && activeFile.diffModifiedContent !== undefined) {
-    const originalLines = renderDiffText(activeFile.diffOriginalContent);
-    const modifiedLines = renderDiffText(activeFile.diffModifiedContent);
-    const maxLines = Math.max(originalLines.length, modifiedLines.length);
     return (
-      <div className="code-editor">
-        <div className="diff-notice" role="note">
-          <span className="diff-notice-title">{tt('sc.diffPreview')}</span>
-          <span className="diff-notice-path">{getDiffDisplayPath(activeFile.serverPath, activeFile.name)}</span>
-        </div>
-        <div className="simple-diff" style={{ fontSize: state.settings.fontSize, fontFamily: `'${state.settings.fontFamily}', 'JetBrains Mono', Consolas, monospace` }}>
-          <div className="simple-diff-pane">
-            <div className="simple-diff-pane-title">Original</div>
-            <pre ref={diffLeftRef} className="simple-diff-code" onScroll={() => syncDiffScroll('left')}>
-              {Array.from({ length: maxLines }).map((_, index) => {
-                const left = originalLines[index] ?? '';
-                const right = modifiedLines[index] ?? '';
-                const changed = left !== right;
-                return <div key={index} className={`simple-diff-line ${changed ? 'removed' : ''}`}><span className="simple-diff-line-no">{index + 1}</span><span>{left || ' '}</span></div>;
-              })}
-            </pre>
-          </div>
-          <div className="simple-diff-pane">
-            <div className="simple-diff-pane-title">Current</div>
-            <pre ref={diffRightRef} className="simple-diff-code" onScroll={() => syncDiffScroll('right')}>
-              {Array.from({ length: maxLines }).map((_, index) => {
-                const left = originalLines[index] ?? '';
-                const right = modifiedLines[index] ?? '';
-                const changed = left !== right;
-                return <div key={index} className={`simple-diff-line ${changed ? 'added' : ''}`}><span className="simple-diff-line-no">{index + 1}</span><span>{right || ' '}</span></div>;
-              })}
-            </pre>
-          </div>
-        </div>
-      </div>
+      <DiffPreview
+        title={tt('sc.diffPreview')}
+        serverPath={activeFile.serverPath}
+        fallbackName={activeFile.name}
+        original={activeFile.diffOriginalContent}
+        modified={activeFile.diffModifiedContent}
+        hunks={activeFile.diffHunks}
+        fontSize={state.settings.fontSize}
+        fontFamily={state.settings.fontFamily}
+        theme={getMonacoTheme(state.settings.theme, state.settings.colorScheme)}
+      />
     );
   }
 

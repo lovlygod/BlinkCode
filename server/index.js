@@ -284,6 +284,55 @@ app.get('/api/git/file-diff', (req, res) => {
   res.json({ path: filePath, original, modified, staged, status });
 });
 
+app.get('/api/git/inline-diff', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const gitDir = path.join(workspace, '.git');
+  if (!fs.existsSync(gitDir)) return res.status(400).json({ error: 'Not a Git repository' });
+
+  const filePath = String(req.query.path || '');
+  const staged = req.query.staged === 'true';
+  const status = String(req.query.status || 'modified');
+  const fullPath = safePath(filePath);
+  if (!filePath || !fullPath) return res.status(400).json({ error: 'Invalid path' });
+
+  if (status === 'untracked') {
+    try {
+      const content = fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : '';
+      const lineCount = content.length ? content.split('\n').length : 0;
+      const hunk = lineCount > 0
+        ? { oldStart: 0, oldLines: 0, newStart: 1, newLines: lineCount, type: 'added' }
+        : null;
+      return res.json({ path: filePath, staged, status, hunks: hunk ? [hunk] : [] });
+    } catch {
+      return res.json({ path: filePath, staged, status, hunks: [] });
+    }
+  }
+
+  const args = staged
+    ? ['diff', '--staged', '--no-color', '--unified=0', '--', filePath]
+    : ['diff', '--no-color', '--unified=0', '--', filePath];
+
+  runGit(args, workspace, (err, stdout, stderr) => {
+    if (err && !stdout) return res.status(500).json({ error: stderr || err.message });
+
+    const hunks = [];
+    const lines = String(stdout || '').split('\n');
+    for (const line of lines) {
+      if (!line.startsWith('@@')) continue;
+      const m = /@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line);
+      if (!m) continue;
+      const oldStart = Number(m[1]);
+      const oldLines = Number(m[2] || '1');
+      const newStart = Number(m[3]);
+      const newLines = Number(m[4] || '1');
+      const type = oldLines === 0 ? 'added' : newLines === 0 ? 'deleted' : 'modified';
+      hunks.push({ oldStart, oldLines, newStart, newLines, type });
+    }
+
+    res.json({ path: filePath, staged, status, hunks });
+  });
+});
+
 app.post('/api/git/commit', (req, res) => {
   if (!workspace) return res.status(400).json({ error: 'No workspace' });
   const { message } = req.body;

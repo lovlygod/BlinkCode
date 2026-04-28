@@ -295,6 +295,21 @@ export interface GitFileDiffResponse {
   status: GitFileEntry['status'];
 }
 
+export interface GitInlineDiffHunk {
+  oldStart: number;
+  oldLines: number;
+  newStart: number;
+  newLines: number;
+  type: 'added' | 'deleted' | 'modified';
+}
+
+export interface GitInlineDiffResponse {
+  path: string;
+  staged: boolean;
+  status: GitFileEntry['status'];
+  hunks: GitInlineDiffHunk[];
+}
+
 export async function fetchGitStatus(): Promise<GitStatusResponse> {
   return request(`${API}/git/status`);
 }
@@ -326,6 +341,11 @@ export async function gitDiscard(paths: string[]): Promise<void> {
 export async function fetchGitFileDiff(path: string, staged: boolean, status: GitFileEntry['status']): Promise<GitFileDiffResponse> {
   const params = new URLSearchParams({ path, staged: String(staged), status });
   return request(`${API}/git/file-diff?${params.toString()}`);
+}
+
+export async function fetchGitInlineDiff(path: string, staged: boolean, status: GitFileEntry['status']): Promise<GitInlineDiffResponse> {
+  const params = new URLSearchParams({ path, staged: String(staged), status });
+  return request(`${API}/git/inline-diff?${params.toString()}`);
 }
 
 export async function gitCommit(message: string): Promise<{ output: string }> {

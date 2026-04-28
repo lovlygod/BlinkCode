@@ -114,6 +114,15 @@ Problems UI implementation:
 - Recent projects in the empty explorer state
 - Centralized file-support rules in [`supportedWebFiles.ts`](../../src/utils/supportedWebFiles.ts)
 
+### Source Control and inline diff
+
+- Full Source Control panel with staged / unstaged / untracked sections — [`SourceControl`](../../src/components/SourceControl/SourceControl.tsx)
+- Stage, unstage, discard, commit, pull and push actions with contextual error messages
+- File-level diff preview opened on change click, with side-by-side original/current panes
+- Extracted diff UI component — [`DiffPreview`](../../src/components/CodeEditor/DiffPreview.tsx) with dedicated styling in [`DiffPreview.css`](../../src/components/CodeEditor/DiffPreview.css)
+- Inline Monaco Git decorations for added / modified / deleted lines in normal editor view — [`CodeEditor`](../../src/components/CodeEditor/CodeEditor.tsx)
+- Immediate untracked-file highlighting and cache-assisted decoration re-apply when switching files
+
 ## File handling
 
 - Supported files open in Monaco
