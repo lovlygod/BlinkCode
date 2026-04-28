@@ -36,8 +36,19 @@ export function getRawFileUrl(serverPath: string): string {
 
 async function request(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const raw = await res.text();
+  let data: any = null;
+  try {
+    data = raw ? JSON.parse(raw) : null;
+  } catch {}
+
+  if (!res.ok) {
+    const serverMessage = data?.error || data?.message || raw;
+    const suffix = serverMessage ? ` - ${String(serverMessage).trim()}` : '';
+    throw new Error(`API error: ${res.status}${suffix}`);
+  }
+
+  return data ?? {};
 }
 
 interface ServerTreeItem {
@@ -276,6 +287,14 @@ export interface GitStatusResponse {
   untracked: GitFileEntry[];
 }
 
+export interface GitFileDiffResponse {
+  path: string;
+  original: string;
+  modified: string;
+  staged: boolean;
+  status: GitFileEntry['status'];
+}
+
 export async function fetchGitStatus(): Promise<GitStatusResponse> {
   return request(`${API}/git/status`);
 }
@@ -304,10 +323,23 @@ export async function gitDiscard(paths: string[]): Promise<void> {
   });
 }
 
+export async function fetchGitFileDiff(path: string, staged: boolean, status: GitFileEntry['status']): Promise<GitFileDiffResponse> {
+  const params = new URLSearchParams({ path, staged: String(staged), status });
+  return request(`${API}/git/file-diff?${params.toString()}`);
+}
+
 export async function gitCommit(message: string): Promise<{ output: string }> {
   return request(`${API}/git/commit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),
   });
+}
+
+export async function gitPull(): Promise<{ output: string }> {
+  return request(`${API}/git/pull`, { method: 'POST' });
+}
+
+export async function gitPush(): Promise<{ output: string }> {
+  return request(`${API}/git/push`, { method: 'POST' });
 }

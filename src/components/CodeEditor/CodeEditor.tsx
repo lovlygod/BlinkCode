@@ -55,6 +55,15 @@ function defineBlinkTheme(monaco: any, name: string, theme: { base: string; inhe
   });
 }
 
+function getDiffDisplayPath(serverPath: string | undefined, fallback: string): string {
+  if (!serverPath) return fallback;
+  return serverPath.replace(/^__git_diff__\/(staged|unstaged)\//, '');
+}
+
+function renderDiffText(content: string): string[] {
+  return content.split('\n');
+}
+
 export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 'secondary' }) {
   const { state, updateFileContent, getActiveFile, getSplitActiveFile, registerEditor, dispatch } = useEditor();
   const getFileForGroup = group === 'primary' ? getActiveFile : getSplitActiveFile;
@@ -74,6 +83,9 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const saveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
+  const diffLeftRef = useRef<HTMLPreElement>(null);
+  const diffRightRef = useRef<HTMLPreElement>(null);
+  const syncingDiffScrollRef = useRef(false);
   const settingsRef = useRef(state.settings);
   settingsRef.current = state.settings;
   const [imgError, setImgError] = useState(false);
@@ -119,6 +131,21 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const handleRequestDismissOnboarding = () => {
     setShowOnboardingDismiss(true);
   };
+
+  const syncDiffScroll = useCallback((source: 'left' | 'right') => {
+    if (syncingDiffScrollRef.current) return;
+
+    const from = source === 'left' ? diffLeftRef.current : diffRightRef.current;
+    const to = source === 'left' ? diffRightRef.current : diffLeftRef.current;
+    if (!from || !to) return;
+
+    syncingDiffScrollRef.current = true;
+    to.scrollTop = from.scrollTop;
+    to.scrollLeft = from.scrollLeft;
+    requestAnimationFrame(() => {
+      syncingDiffScrollRef.current = false;
+    });
+  }, []);
 
   const adjustPanForZoom = (oldZoom: number, newZoom: number) => {
     const el = previewRef.current;
@@ -1244,6 +1271,44 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
           <FileWarning size={32} />
           <span>{tt(detailedSupport?.messageKey || 'preview.binaryFile')}</span>
           {detailedSupport?.badge && <span className="preview-badge">{detailedSupport.badge}</span>}
+        </div>
+      </div>
+    );
+  }
+
+  if (activeFile.diffOriginalContent !== undefined && activeFile.diffModifiedContent !== undefined) {
+    const originalLines = renderDiffText(activeFile.diffOriginalContent);
+    const modifiedLines = renderDiffText(activeFile.diffModifiedContent);
+    const maxLines = Math.max(originalLines.length, modifiedLines.length);
+    return (
+      <div className="code-editor">
+        <div className="diff-notice" role="note">
+          <span className="diff-notice-title">{tt('sc.diffPreview')}</span>
+          <span className="diff-notice-path">{getDiffDisplayPath(activeFile.serverPath, activeFile.name)}</span>
+        </div>
+        <div className="simple-diff" style={{ fontSize: state.settings.fontSize, fontFamily: `'${state.settings.fontFamily}', 'JetBrains Mono', Consolas, monospace` }}>
+          <div className="simple-diff-pane">
+            <div className="simple-diff-pane-title">Original</div>
+            <pre ref={diffLeftRef} className="simple-diff-code" onScroll={() => syncDiffScroll('left')}>
+              {Array.from({ length: maxLines }).map((_, index) => {
+                const left = originalLines[index] ?? '';
+                const right = modifiedLines[index] ?? '';
+                const changed = left !== right;
+                return <div key={index} className={`simple-diff-line ${changed ? 'removed' : ''}`}><span className="simple-diff-line-no">{index + 1}</span><span>{left || ' '}</span></div>;
+              })}
+            </pre>
+          </div>
+          <div className="simple-diff-pane">
+            <div className="simple-diff-pane-title">Current</div>
+            <pre ref={diffRightRef} className="simple-diff-code" onScroll={() => syncDiffScroll('right')}>
+              {Array.from({ length: maxLines }).map((_, index) => {
+                const left = originalLines[index] ?? '';
+                const right = modifiedLines[index] ?? '';
+                const changed = left !== right;
+                return <div key={index} className={`simple-diff-line ${changed ? 'added' : ''}`}><span className="simple-diff-line-no">{index + 1}</span><span>{right || ' '}</span></div>;
+              })}
+            </pre>
+          </div>
         </div>
       </div>
     );

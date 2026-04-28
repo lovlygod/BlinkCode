@@ -211,6 +211,7 @@ export default function Sidebar() {
   const handleCtxNewFolder = () => { setInline({ parentId: ctx?.nodeId ?? null, type: 'folder', value: '' }); setCtx(null); };
 
   const filterMatches = (node: FileNode): boolean => {
+    if (node.serverPath?.startsWith('__git_diff__/')) return false;
     if (!filter) return true;
     const q = filter.toLowerCase();
     if (node.name.toLowerCase().includes(q)) return true;
@@ -219,7 +220,7 @@ export default function Sidebar() {
   };
 
   const renderTree = (nodes: FileNode[], depth: number): React.ReactNode => {
-    const sorted = sortNodes(nodes.filter(filterMatches));
+    const sorted = sortNodes(nodes.filter(node => !node.serverPath?.startsWith('__git_diff__/') && filterMatches(node)));
     return sorted.map((node) => {
       const icon = node.type === 'file' ? getFileIcon(node.name) : null;
       const isActive = node.id === activeFileId;

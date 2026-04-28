@@ -7,8 +7,12 @@ export default function Breadcrumb() {
   const file = getActiveFile();
 
   if (!file?.serverPath) return null;
+  if (file.serverPath.startsWith('__git_diff__/')) return null;
 
-  const parts = file.serverPath.split('/');
+  const displayPath = file.serverPath.startsWith('__git_diff__/')
+    ? file.serverPath.replace(/^__git_diff__\/(staged|unstaged)\//, '')
+    : file.serverPath;
+  const parts = displayPath.split('/');
 
   return (
     <div className="breadcrumb">

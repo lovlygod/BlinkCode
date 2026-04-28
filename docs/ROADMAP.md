@@ -118,11 +118,12 @@ Git integration should make BlinkCode useful as a daily development environment 
 ### 2.1 Source Control panel
 
 - **Priority:** P0
-- [ ] **Status:** In progress
+- [x] **Status:** Done
 - **Description:** Add a dedicated Git panel for changed files, staged files and commits.
 - **Why it matters:** Source control is a core IDE feature. Users should be able to review and commit changes visually.
-- **Current state:** MVP Source Control panel is implemented with backend Git API (`/api/git/status`, `/api/git/stage`, `/api/git/unstage`, `/api/git/discard`, `/api/git/commit`), frontend panel showing staged/unstaged/untracked files with collapsible sections, stage/unstage/discard actions per file, commit input with `Ctrl+Enter`, branch display, auto-refresh every 5 seconds, ActivityBar integration with mutually exclusive panel switching (Explorer/Search/Source Control), and shared resizable sidebar width.
-- **Next improvements:** Add confirm dialog before discard, diff preview on file click, inline diff gutter decorations in Monaco, push/pull/sync, merge conflict handling, and amend commit support.
+- **Current state:** Source Control panel is implemented end-to-end with backend Git API (`/api/git/status`, `/api/git/stage`, `/api/git/unstage`, `/api/git/discard`, `/api/git/commit`, `/api/git/file-diff`, `/api/git/pull`, `/api/git/push`), staged/unstaged/untracked sections, stage/unstage/discard actions, custom discard confirmation modal, commit input with `Ctrl+Enter`, pull/push actions in header, branch display, auto-refresh, and shared resizable sidebar width.
+- **Completed in this cycle:** Added diff preview on file click with reliable side-by-side view, hidden virtual diff nodes from Explorer and Breadcrumb, improved Git error reporting with actionable messages, and pull/push fallback handling for missing upstream/tracking branches.
+- **Next improvements:** Inline diff gutter decorations in Monaco, merge conflict handling UX, and amend commit support.
 
 ### 2.2 Inline diff and gutter indicators
 

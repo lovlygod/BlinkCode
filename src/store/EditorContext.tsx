@@ -605,6 +605,36 @@ function reducer(state: EditorState, action: EditorAction): EditorState {
       };
     }
 
+    case 'OPEN_DIFF_PREVIEW': {
+      const { node } = action.payload;
+      const existing = state.openTabs.find(t => {
+        const f = findNodeById(state.files, t.fileId);
+        return f?.serverPath === node.serverPath;
+      });
+
+      if (existing) {
+        return {
+          ...state,
+          files: updateNode(state.files, existing.fileId, () => node),
+          activeTabId: existing.id,
+        };
+      }
+
+      const tab: Tab = {
+        id: uuid(),
+        fileId: node.id,
+        name: node.name,
+        language: node.language || getMonacoLanguage(node.name),
+      };
+
+      return {
+        ...state,
+        files: [...state.files, node],
+        openTabs: [...state.openTabs, tab],
+        activeTabId: tab.id,
+      };
+    }
+
     case 'RESTORE_STATE': {
       const p = action.payload;
       let s = { ...state };
@@ -787,6 +817,7 @@ interface Ctx {
   toggleProblemsPanel: () => void;
   updateSettings: (s: Partial<EditorSettings>) => void;
   openSettingsJson: (scope?: 'global' | 'workspace') => Promise<void>;
+  openDiffPreview: (node: FileNode) => void;
   registerEditor: (editor: any) => void;
   triggerEditorAction: (action: 'undo' | 'redo') => void;
 }
@@ -819,6 +850,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_FILE_CONTENT', payload: { fileId: file.id, content: '' } });
     }
     dispatch({ type: 'OPEN_FILE', payload: { file } });
+  }, []);
+
+  const openDiffPreview = useCallback((node: FileNode) => {
+    dispatch({ type: 'OPEN_DIFF_PREVIEW', payload: { node } });
   }, []);
 
   const closeTab = useCallback((id: string) => dispatch({ type: 'CLOSE_TAB', payload: { tabId: id } }), []);
@@ -1268,7 +1303,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       addTerminalInstance, removeTerminalInstance, setActiveTerminal,
       addTerminalLine, updateTerminalCwd, clearTerminal, collapseAll,
       loadFromServer, openFolderFromServer,
-      toggleSettings, toggleSearchPanel, toggleSourceControl, toggleProblemsPanel, updateSettings, openSettingsJson, registerEditor, triggerEditorAction,
+      toggleSettings, toggleSearchPanel, toggleSourceControl, toggleProblemsPanel, updateSettings, openSettingsJson, openDiffPreview, registerEditor, triggerEditorAction,
     }}>
       {children}
     </EditorContext.Provider>

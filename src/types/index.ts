@@ -12,6 +12,8 @@ export interface FileNode {
   size?: number;
   settingsScope?: 'global' | 'workspace';
   settingsFilePath?: string;
+  diffOriginalContent?: string;
+  diffModifiedContent?: string;
 }
 
 export interface Tab {
@@ -172,4 +174,5 @@ export type EditorAction =
   | { type: 'SPLIT_TAB'; payload: { tabId: string } }
   | { type: 'SET_SPLIT_ACTIVE_TAB'; payload: { tabId: string | null } }
   | { type: 'CLOSE_SPLIT_TAB' }
-  | { type: 'OPEN_VIRTUAL_SETTINGS'; payload: { node: FileNode } };
+  | { type: 'OPEN_VIRTUAL_SETTINGS'; payload: { node: FileNode } }
+  | { type: 'OPEN_DIFF_PREVIEW'; payload: { node: FileNode } };

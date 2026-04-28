@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, ChevronRight, GitBranch, Minus, Plus, RefreshCw, RotateCcw, X } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronRight, Download, GitBranch, Minus, Plus, RefreshCw, RotateCcw, Upload, X } from 'lucide-react';
 import { useEditor } from '../../store/EditorContext';
 import type { FileNode } from '../../types';
-import { fetchGitStatus, gitStage, gitUnstage, gitDiscard, gitCommit, type GitStatusResponse, type GitFileEntry } from '../../utils/api';
+import { fetchGitStatus, fetchGitFileDiff, gitStage, gitUnstage, gitDiscard, gitCommit, gitPull, gitPush, type GitStatusResponse, type GitFileEntry } from '../../utils/api';
 import { useT } from '../../hooks/useT';
 import { useHorizontalResize } from '../../hooks/useHorizontalResize';
+import { getMonacoLanguage } from '../../utils/supportedWebFiles';
 import './SourceControl.css';
 
 function statusLabel(status: GitFileEntry['status']): string {
@@ -16,15 +17,50 @@ function statusLabel(status: GitFileEntry['status']): string {
   }
 }
 
+function formatDiscardConfirmMessage(paths: string[], tt: (key: string, args?: Record<string, string | number>) => string): string {
+  if (paths.length === 1) {
+    return tt('sc.discardConfirmOne', { path: paths[0] });
+  }
+
+  return tt('sc.discardConfirmMany', { count: paths.length });
+}
+
+function formatGitActionError(action: 'commit' | 'pull' | 'push', err: unknown, tt: (key: string, args?: Record<string, string | number>) => string): string {
+  const raw = String((err as any)?.message || '').toLowerCase();
+
+  if (action === 'commit' && raw.includes('author identity unknown')) {
+    return tt('sc.commitIdentityHint');
+  }
+  if (action === 'pull' && raw.includes('couldn\'t find remote ref')) {
+    return tt('sc.pullRemoteBranchMissing');
+  }
+  if (action === 'pull' && raw.includes('there is no tracking information')) {
+    return tt('sc.pullTrackingMissing');
+  }
+  if (action === 'push' && raw.includes('has no upstream branch')) {
+    return tt('sc.pushUpstreamMissing');
+  }
+  if (action === 'push' && raw.includes('non-fast-forward')) {
+    return tt('sc.pushNonFastForward');
+  }
+  if (raw.includes('authentication failed') || raw.includes('permission denied') || raw.includes('could not read username')) {
+    return tt('sc.authFailed');
+  }
+
+  return (err as any)?.message || tt('sc.unknownGitError');
+}
+
 export default function SourceControl() {
-  const { state, openFile, toggleSourceControl, addToast, setSidebarWidth } = useEditor();
+  const { state, openFile, openDiffPreview, toggleSourceControl, addToast, setSidebarWidth } = useEditor();
   const tt = useT();
   const resizerRef = useHorizontalResize(state.sidebarWidth, setSidebarWidth);
   const [status, setStatus] = useState<GitStatusResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [commitMsg, setCommitMsg] = useState('');
   const [committing, setCommitting] = useState(false);
+  const [remoteAction, setRemoteAction] = useState<'pull' | 'push' | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [discardPaths, setDiscardPaths] = useState<string[] | null>(null);
 
   const refresh = useCallback(async () => {
     if (!state.workspaceDir) return;
@@ -72,13 +108,26 @@ export default function SourceControl() {
   }, [refresh, addToast, tt]);
 
   const handleDiscard = useCallback(async (paths: string[]) => {
+    if (paths.length === 0) return;
+
+    setDiscardPaths(paths);
+  }, []);
+
+  const confirmDiscard = useCallback(async () => {
+    if (!discardPaths || discardPaths.length === 0) return;
+
     try {
-      await gitDiscard(paths);
+      await gitDiscard(discardPaths);
+      setDiscardPaths(null);
       await refresh();
     } catch (err: any) {
       addToast(tt('sc.discardFailed') + (err?.message || ''), 'error');
     }
-  }, [refresh, addToast, tt]);
+  }, [discardPaths, refresh, addToast, tt]);
+
+  const cancelDiscard = useCallback(() => {
+    setDiscardPaths(null);
+  }, []);
 
   const handleCommit = useCallback(async () => {
     if (!commitMsg.trim()) return;
@@ -89,15 +138,63 @@ export default function SourceControl() {
       addToast(tt('sc.committed'), 'success');
       await refresh();
     } catch (err: any) {
-      addToast(tt('sc.commitFailed') + (err?.message || ''), 'error');
+      addToast(tt('sc.commitFailed') + formatGitActionError('commit', err, tt), 'error');
     }
     setCommitting(false);
   }, [commitMsg, refresh, addToast, tt]);
 
-  const handleFileClick = useCallback((filePath: string) => {
-    const node = findNodeByPath(state.files, filePath);
-    if (node) openFile(node);
-  }, [state.files, openFile]);
+  const handlePull = useCallback(async () => {
+    setRemoteAction('pull');
+    try {
+      await gitPull();
+      addToast(tt('sc.pullSuccess'), 'success');
+      await refresh();
+    } catch (err: any) {
+      addToast(tt('sc.pullFailed') + formatGitActionError('pull', err, tt), 'error');
+    } finally {
+      setRemoteAction(null);
+    }
+  }, [refresh, addToast, tt]);
+
+  const handlePush = useCallback(async () => {
+    setRemoteAction('push');
+    try {
+      await gitPush();
+      addToast(tt('sc.pushSuccess'), 'success');
+      await refresh();
+    } catch (err: any) {
+      addToast(tt('sc.pushFailed') + formatGitActionError('push', err, tt), 'error');
+    } finally {
+      setRemoteAction(null);
+    }
+  }, [refresh, addToast, tt]);
+
+  const handleFileClick = useCallback(async (item: GitFileEntry, staged: boolean) => {
+    if (item.status === 'untracked') {
+      const node = findNodeByPath(state.files, item.path);
+      if (node) openFile(node);
+      return;
+    }
+
+    try {
+      const diff = await fetchGitFileDiff(item.path, staged, item.status);
+      const name = item.path.split('/').pop() || item.path;
+      const node: FileNode = {
+        id: `git-diff:${staged ? 'staged' : 'unstaged'}:${item.path}`,
+        name: `${name} (diff)`,
+        type: 'file',
+        serverPath: `__git_diff__/${staged ? 'staged' : 'unstaged'}/${item.path}`,
+        language: getMonacoLanguage(name),
+        content: diff.modified,
+        dirty: false,
+        diffOriginalContent: diff.original,
+        diffModifiedContent: diff.modified,
+      };
+      openDiffPreview(node);
+    } catch (err: any) {
+      addToast(tt('sc.diffFailed') + (err?.message || ''), 'error');
+    }
+  }, [state.files, openFile, openDiffPreview, addToast, tt]);
 
   if (!state.showSourceControl) return null;
 
@@ -108,6 +205,7 @@ export default function SourceControl() {
     title: string,
     items: GitFileEntry[],
     actions: (item: GitFileEntry) => React.ReactNode,
+    staged: boolean,
     bulkAction?: () => void,
     bulkIcon?: React.ReactNode,
   ) => {
@@ -130,7 +228,7 @@ export default function SourceControl() {
           </div>
         </div>
         {!collapsed && items.map(item => (
-          <div key={item.path} className="sc-file-item" onClick={() => handleFileClick(item.path)}>
+          <div key={item.path} className="sc-file-item" onClick={() => handleFileClick(item, staged)}>
             <span className={`sc-file-status ${item.status}`}>{statusLabel(item.status)}</span>
             <span className="sc-file-name">{item.path}</span>
             <div className="sc-file-actions">{actions(item)}</div>
@@ -142,6 +240,26 @@ export default function SourceControl() {
 
   return (
     <div className="source-control-panel" style={{ width: state.sidebarWidth }}>
+      {discardPaths && (
+        <div className="sc-modal-backdrop" role="presentation" onMouseDown={cancelDiscard}>
+          <div className="sc-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="sc-discard-title" onMouseDown={e => e.stopPropagation()}>
+            <div className="sc-confirm-content">
+              <div className="sc-confirm-heading">
+                <span className="sc-confirm-icon">
+                  <AlertTriangle size={14} />
+                </span>
+                <div id="sc-discard-title" className="sc-confirm-title">{tt('sc.discardConfirmTitle')}</div>
+              </div>
+              <div className="sc-confirm-message">{formatDiscardConfirmMessage(discardPaths, tt)}</div>
+              {discardPaths.length === 1 && <div className="sc-confirm-path">{discardPaths[0]}</div>}
+              <div className="sc-confirm-actions">
+                <button className="sc-confirm-cancel" onClick={cancelDiscard}>{tt('common.cancel')}</button>
+                <button className="sc-confirm-danger" onClick={confirmDiscard}>{tt('sc.discardConfirmAction')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="sc-head">
         <span className="sc-title">
           <GitBranch size={14} />
@@ -149,6 +267,12 @@ export default function SourceControl() {
           {totalChanges > 0 && <span className="sc-badge">{totalChanges}</span>}
         </span>
         <div className="sc-head-actions">
+          <button className="sc-icon-btn" title={tt('sc.pull')} onClick={handlePull} disabled={loading || remoteAction !== null}>
+            <Download size={14} />
+          </button>
+          <button className="sc-icon-btn" title={tt('sc.push')} onClick={handlePush} disabled={loading || remoteAction !== null}>
+            <Upload size={14} />
+          </button>
           <button className="sc-icon-btn" title={tt('sc.refresh')} onClick={refresh} disabled={loading}>
             <RefreshCw size={14} />
           </button>
@@ -199,6 +323,7 @@ export default function SourceControl() {
                   </button>
                 </>
               ),
+              true,
               () => handleUnstage(),
               <Minus size={14} />,
             )}
@@ -216,6 +341,7 @@ export default function SourceControl() {
                   </button>
                 </>
               ),
+              false,
               () => handleStage(status.unstaged.map(i => i.path)),
               <Plus size={14} />,
             )}
@@ -228,6 +354,7 @@ export default function SourceControl() {
                   <Plus size={14} />
                 </button>
               ),
+              false,
               () => handleStage(status.untracked.map(i => i.path)),
               <Plus size={14} />,
             )}

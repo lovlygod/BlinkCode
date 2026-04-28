@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import chokidar from 'chokidar';
-import { execFile } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { saveState, loadState, saveWorkspacePath, loadWorkspacePath, addRecentProject, loadRecentProjects } from './db.js';
 import { createPtyManager } from './pty.js';
@@ -241,6 +241,49 @@ app.post('/api/git/discard', (req, res) => {
   });
 });
 
+app.get('/api/git/file-diff', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const gitDir = path.join(workspace, '.git');
+  if (!fs.existsSync(gitDir)) return res.status(400).json({ error: 'Not a Git repository' });
+
+  const filePath = String(req.query.path || '');
+  const staged = req.query.staged === 'true';
+  const status = String(req.query.status || 'modified');
+  const fullPath = safePath(filePath);
+  if (!filePath || !fullPath) return res.status(400).json({ error: 'Invalid path' });
+
+  const readWorkingTree = () => {
+    try {
+      return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : '';
+    } catch {
+      return '';
+    }
+  };
+
+  const readGitObject = (spec, fallback = '') => {
+    try {
+      return execFileSync('git', ['show', spec], { cwd: workspace, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    } catch {
+      return fallback;
+    }
+  };
+
+  const headSpec = `HEAD:${filePath}`;
+  const indexSpec = `:${filePath}`;
+  const original = status === 'untracked'
+    ? ''
+    : staged
+      ? readGitObject(headSpec)
+      : readGitObject(indexSpec, readGitObject(headSpec));
+  const modified = status === 'deleted'
+    ? ''
+    : staged
+      ? readGitObject(indexSpec, readWorkingTree())
+      : readWorkingTree();
+
+  res.json({ path: filePath, original, modified, staged, status });
+});
+
 app.post('/api/git/commit', (req, res) => {
   if (!workspace) return res.status(400).json({ error: 'No workspace' });
   const { message } = req.body;
@@ -248,6 +291,66 @@ app.post('/api/git/commit', (req, res) => {
   runGit(['commit', '-m', message.trim()], workspace, (err, stdout, stderr) => {
     if (err) return res.status(500).json({ error: stderr || err.message });
     res.json({ ok: true, output: stdout });
+  });
+});
+
+app.post('/api/git/pull', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+
+  const getCurrentBranch = () => {
+    try {
+      return execFileSync('git', ['branch', '--show-current'], { cwd: workspace, encoding: 'utf8' }).trim();
+    } catch {
+      return '';
+    }
+  };
+
+  const branch = getCurrentBranch();
+
+  runGit(['pull', '--ff-only'], workspace, (err, stdout, stderr) => {
+    if (!err) return res.json({ ok: true, output: stdout });
+
+    const errText = String(stderr || err.message || '');
+    const noTracking = errText.includes('There is no tracking information for the current branch');
+
+    if (!noTracking || !branch) {
+      return res.status(500).json({ error: errText || 'git pull failed' });
+    }
+
+    runGit(['pull', '--ff-only', 'origin', branch], workspace, (err2, stdout2, stderr2) => {
+      if (err2) return res.status(500).json({ error: stderr2 || err2.message });
+      res.json({ ok: true, output: stdout2 });
+    });
+  });
+});
+
+app.post('/api/git/push', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+
+  const getCurrentBranch = () => {
+    try {
+      return execFileSync('git', ['branch', '--show-current'], { cwd: workspace, encoding: 'utf8' }).trim();
+    } catch {
+      return '';
+    }
+  };
+
+  const branch = getCurrentBranch();
+
+  runGit(['push'], workspace, (err, stdout, stderr) => {
+    if (!err) return res.json({ ok: true, output: stdout });
+
+    const errText = String(stderr || err.message || '');
+    const noUpstream = errText.includes('has no upstream branch');
+
+    if (!noUpstream || !branch) {
+      return res.status(500).json({ error: errText || 'git push failed' });
+    }
+
+    runGit(['push', '--set-upstream', 'origin', branch], workspace, (err2, stdout2, stderr2) => {
+      if (err2) return res.status(500).json({ error: stderr2 || err2.message });
+      res.json({ ok: true, output: stdout2 });
+    });
   });
 });
 
