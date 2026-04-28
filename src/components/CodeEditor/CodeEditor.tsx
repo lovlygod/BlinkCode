@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect, useState } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import { useEditor } from '../../store/EditorContext';
-import { isImageFile, getRawFileUrl, fetchGitStatus, fetchGitInlineDiff, type GitFileEntry } from '../../utils/api';
+import { isImageFile, getRawFileUrl, fetchGitStatus, fetchGitInlineDiff, fetchGitBlameLine, type GitFileEntry, type GitBlameLineInfo } from '../../utils/api';
 import { FileWarning, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useT } from '../../hooks/useT';
 import { getDetailedFileSupportInfo, getFileSupportInfo, getMonacoLanguage } from '../../utils/supportedWebFiles';
@@ -78,6 +78,9 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   const gitDecorationsRef = useRef<string[]>([]);
   const gitStatusCacheRef = useRef<GitFileEntry[] | null>(null);
   const gitInlineCacheRef = useRef<Map<string, { hunks: Array<{ oldStart: number; oldLines: number; newStart: number; newLines: number; type: 'added' | 'deleted' | 'modified' }>; ts: number }>>(new Map());
+  const gitBlameCacheRef = useRef<Map<string, GitBlameLineInfo | null>>(new Map());
+  const blameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [blameInfo, setBlameInfo] = useState<GitBlameLineInfo | null>(null);
   const settingsRef = useRef(state.settings);
   settingsRef.current = state.settings;
   const [imgError, setImgError] = useState(false);
@@ -169,6 +172,53 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
   }, [activeFile, isUnsupportedTextFile, updateFileContent]);
 
   useEffect(() => () => { if (saveRef.current) clearTimeout(saveRef.current); }, []);
+
+  useEffect(() => {
+    setBlameInfo(null);
+    if (blameTimerRef.current) {
+      clearTimeout(blameTimerRef.current);
+      blameTimerRef.current = null;
+    }
+  }, [activeFile?.id]);
+
+  useEffect(() => {
+    const isNormalFile = Boolean(activeFile?.serverPath && !activeFile.serverPath.startsWith('__'));
+    if (!isNormalFile) {
+      setBlameInfo(null);
+      return;
+    }
+
+    const onCursor = (ev: Event) => {
+      const line = Number((ev as CustomEvent)?.detail?.line || 0);
+      if (!line || !activeFile?.serverPath) return;
+
+      const key = `${activeFile.serverPath}:${line}`;
+      if (gitBlameCacheRef.current.has(key)) {
+        setBlameInfo(gitBlameCacheRef.current.get(key) || null);
+        return;
+      }
+
+      if (blameTimerRef.current) clearTimeout(blameTimerRef.current);
+      blameTimerRef.current = setTimeout(async () => {
+        try {
+          const data = await fetchGitBlameLine(activeFile.serverPath!, line);
+          gitBlameCacheRef.current.set(key, data.blame || null);
+          setBlameInfo(data.blame || null);
+        } catch {
+          setBlameInfo(null);
+        }
+      }, 220);
+    };
+
+    window.addEventListener('blinkcode:cursorPosition', onCursor as EventListener);
+    return () => {
+      window.removeEventListener('blinkcode:cursorPosition', onCursor as EventListener);
+      if (blameTimerRef.current) {
+        clearTimeout(blameTimerRef.current);
+        blameTimerRef.current = null;
+      }
+    };
+  }, [activeFile?.id, activeFile?.serverPath]);
 
   useEffect(() => {
     if (editorRef.current && monacoRef.current) {
@@ -1385,6 +1435,14 @@ export default function CodeEditor({ group = 'primary' }: { group?: 'primary' | 
 
   return (
     <div className="code-editor">
+      {blameInfo && (
+        <div className="editor-blame" role="note">
+          <span className="editor-blame-author">{blameInfo.author}</span>
+          <span className="editor-blame-sep">·</span>
+          <span className="editor-blame-summary">{blameInfo.summary}</span>
+          <span className="editor-blame-sha">{blameInfo.shortCommit}</span>
+        </div>
+      )}
       {isUnsupportedTextFile && activeFile && (
         <div className="editor-notice" role="note">
           <div className="editor-notice-icon">

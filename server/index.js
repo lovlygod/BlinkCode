@@ -169,6 +169,8 @@ function runGit(args, cwd, callback) {
   execFile('git', args, { cwd, maxBuffer: 1024 * 1024 }, callback);
 }
 
+const gitBlameCache = new Map();
+
 app.get('/api/git/status', (req, res) => {
   if (!workspace) return res.json({ isRepo: false, branch: null, staged: [], unstaged: [], untracked: [] });
   const gitDir = path.join(workspace, '.git');
@@ -330,6 +332,67 @@ app.get('/api/git/inline-diff', (req, res) => {
     }
 
     res.json({ path: filePath, staged, status, hunks });
+  });
+});
+
+app.get('/api/git/blame-line', (req, res) => {
+  if (!workspace) return res.status(400).json({ error: 'No workspace' });
+  const gitDir = path.join(workspace, '.git');
+  if (!fs.existsSync(gitDir)) return res.status(400).json({ error: 'Not a Git repository' });
+
+  const filePath = String(req.query.path || '');
+  const line = Number(req.query.line || 1);
+  const fullPath = safePath(filePath);
+  if (!filePath || !fullPath || !Number.isFinite(line) || line < 1) return res.status(400).json({ error: 'Invalid path or line' });
+
+  if (!fs.existsSync(fullPath)) {
+    return res.json({ path: filePath, line, blame: null });
+  }
+
+  let head = '';
+  try {
+    head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: workspace, encoding: 'utf8' }).trim();
+  } catch {
+    head = '';
+  }
+
+  const cacheKey = `${workspace}::${head || 'no-head'}::${filePath}::${line}`;
+  const cached = gitBlameCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < 15_000) {
+    return res.json({ path: filePath, line, blame: cached.data });
+  }
+
+  runGit(['blame', '--line-porcelain', '-L', `${line},${line}`, '--', filePath], workspace, (err, stdout, stderr) => {
+    if (err) {
+      const text = String(stderr || err.message || '').toLowerCase();
+      if (text.includes('no such path') || text.includes('file') || text.includes('outside repository')) {
+        return res.json({ path: filePath, line, blame: null });
+      }
+      return res.status(500).json({ error: stderr || err.message });
+    }
+
+    const lines = String(stdout || '').split('\n');
+    const header = (lines[0] || '').trim();
+    const headerParts = header.split(' ');
+    const commit = headerParts[0] || '';
+    const author = (lines.find(l => l.startsWith('author ')) || '').slice(7).trim();
+    const authorTimeRaw = (lines.find(l => l.startsWith('author-time ')) || '').slice(12).trim();
+    const summary = (lines.find(l => l.startsWith('summary ')) || '').slice(8).trim();
+
+    const authorTime = Number(authorTimeRaw || '0');
+    const isUncommitted = /^0+$/.test(commit);
+    const data = isUncommitted
+      ? null
+      : {
+          commit,
+          shortCommit: commit.slice(0, 8),
+          author: author || 'Unknown',
+          authorTime: Number.isFinite(authorTime) ? authorTime : 0,
+          summary: summary || '(no message)',
+        };
+
+    gitBlameCache.set(cacheKey, { ts: Date.now(), data });
+    res.json({ path: filePath, line, blame: data });
   });
 });
 

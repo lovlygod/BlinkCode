@@ -310,6 +310,20 @@ export interface GitInlineDiffResponse {
   hunks: GitInlineDiffHunk[];
 }
 
+export interface GitBlameLineInfo {
+  commit: string;
+  shortCommit: string;
+  author: string;
+  authorTime: number;
+  summary: string;
+}
+
+export interface GitBlameLineResponse {
+  path: string;
+  line: number;
+  blame: GitBlameLineInfo | null;
+}
+
 export async function fetchGitStatus(): Promise<GitStatusResponse> {
   return request(`${API}/git/status`);
 }
@@ -346,6 +360,11 @@ export async function fetchGitFileDiff(path: string, staged: boolean, status: Gi
 export async function fetchGitInlineDiff(path: string, staged: boolean, status: GitFileEntry['status']): Promise<GitInlineDiffResponse> {
   const params = new URLSearchParams({ path, staged: String(staged), status });
   return request(`${API}/git/inline-diff?${params.toString()}`);
+}
+
+export async function fetchGitBlameLine(path: string, line: number): Promise<GitBlameLineResponse> {
+  const params = new URLSearchParams({ path, line: String(line) });
+  return request(`${API}/git/blame-line?${params.toString()}`);
 }
 
 export async function gitCommit(message: string): Promise<{ output: string }> {

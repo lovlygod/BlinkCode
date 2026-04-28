@@ -139,11 +139,13 @@ Git integration should make BlinkCode useful as a daily development environment 
 ### 2.3 Git blame inline
 
 - **Priority:** P1
-- [ ] **Status:** Planned
+- [ ] **Status:** In progress
 - **Description:** Show who last changed a line and when.
 - **Why it matters:** Blame information helps understand ownership and history while reading code.
 - **Expected behavior:** Show blame details for the current line by default, with optional expanded information on hover.
-- **Implementation direction:** Parse `git blame --porcelain` output and cache results per file.
+- **Current state:** Backend endpoint `/api/git/blame-line` is implemented with short-lived cache keyed by workspace + `HEAD` + file + line. Frontend API client is added and editor-side inline blame label renders author, summary and short SHA for the active cursor line.
+- **Completed in this cycle:** Added debounce + lazy-load fetching strategy for cursor movement, plus client-side caching for fast repeated lookups while switching between lines/files.
+- **Next improvements:** Show relative time, add hover details, and make blame visibility configurable in settings.
 
 ### 2.4 GitHub and GitLab integration
 
@@ -657,7 +659,7 @@ This table is the quick checklist for tracking what is already implemented and w
 | 1.9 | Status bar | P1 | [x] Done | Shows editor and workspace metadata. |
 | 2.1 | Source Control panel | P0 | [x] Done | Full panel with stage/unstage/discard/commit, pull/push, diff preview, error handling and resizable layout. |
 | 2.2 | Inline diff and gutter indicators | P0 | [x] Done | Monaco gutter/line decorations, inline diff hunks, extracted diff preview component with synced panes and syntax coloring. |
-| 2.3 | Git blame inline | P1 | [ ] Planned | Needs blame parser and cached per-file blame data. |
+| 2.3 | Git blame inline | P1 | [ ] In progress | Blame-line endpoint + editor inline label + debounce/caching implemented; UX polish and settings toggle pending. |
 | 2.4 | GitHub and GitLab integration | P2 | [ ] Future | Requires authentication and provider API design. |
 | 3.1 | NPM scripts panel | P1 | [ ] Planned | Needs script detection from `package.json` and terminal integration. |
 | 3.2 | Dependency manager | P1 | [ ] Planned | Needs dependency list, outdated checks and package actions. |
