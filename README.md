@@ -108,7 +108,7 @@ guide and troubleshooting.
 npm run dist:win
 ```
 
-Build artifacts are written into [`release/`](release):
+Build artifacts are written into [`./release/`](release):
 
 - installer: `BlinkCode-Setup-0.4.0-x64.exe`
 - portable: `BlinkCode-Portable-0.4.0-x64.exe`
